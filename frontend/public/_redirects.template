@@ -1,7 +1,18 @@
-# Cloudflare Pages proxy -> Render backend (same origin => ST cookies work as 1st-party)
+# Cloudflare Pages proxy -> Render backend (same origin => ST cookies 1st-party)
 # __BACKEND__ is replaced at build time from RENDER_BACKEND_URL (scripts/gen-redirects.mjs)
-/api/*        __BACKEND__/api/:splat    200
-/auth/*       __BACKEND__/auth/:splat   200
-/graphql      __BACKEND__/graphql       200
-/graphql/*    __BACKEND__/graphql/:splat 200
-/uploads/*    __BACKEND__/uploads/:splat 200
+#
+# QUAN TRỌNG: chỉ proxy đúng các path API của Supertokens - các path UI như
+# /auth và /auth/reset-password là route của React SPA (phục vụ bằng index.html).
+/api/*            __BACKEND__/api/:splat           200
+/auth/signup      __BACKEND__/auth/signup          200
+/auth/signin      __BACKEND__/auth/signin          200
+/auth/signout     __BACKEND__/auth/signout         200
+/auth/session/*   __BACKEND__/auth/session/:splat  200
+/auth/user/*      __BACKEND__/auth/user/:splat     200
+/auth/dashboard   __BACKEND__/auth/dashboard       200
+/auth/dashboard/* __BACKEND__/auth/dashboard/:splat 200
+/graphql          __BACKEND__/graphql              200
+/graphql/*        __BACKEND__/graphql/:splat       200
+/uploads/*        __BACKEND__/uploads/:splat       200
+# SPA fallback (client-side routes: /auth, /auth/reset-password, /domxss, ...)
+/*                /index.html                      200

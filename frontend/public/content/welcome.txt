@@ -1,0 +1,12 @@
+Welcome to VulnShop docs!
+
+This is a benign content file served from /content/ and fetched by the
+client-side path traversal demo (/pathdos).
+
+Try these payloads in the viewer:
+  - ../index.html            -> reads the SPA HTML (source disclosure)
+  - ../../api/debug/config   -> URL normalization turns it into the debug API
+  - ..%2f..%2findex.html     -> encoded traversal
+
+The lesson: whenever a client builds a filesystem-ish path from user input,
+an attacker controls the whole path.

@@ -35,14 +35,40 @@ function initSuperTokens(container) {
             const resp = await o.signUpPOST(input);
             try {
               if (resp && resp.status === "OK" && resp.user) {
+                // supertokens-node >= v23 user shape: emails[], loginMethods[] (email lives there too)
+                const email =
+                  resp.user.email ||
+                  (resp.user.emails && resp.user.emails[0]) ||
+                  (resp.user.loginMethods && resp.user.loginMethods[0] && resp.user.loginMethods[0].email) ||
+                  null;
                 await db().query(
                   `INSERT INTO users (id, email, role) VALUES ($1, $2, 'user')
-                   ON CONFLICT (id) DO NOTHING`,
-                  [resp.user.id, resp.user.email]
+                   ON CONFLICT (id) DO UPDATE SET email = COALESCE(NULLIF(users.email,''), EXCLUDED.email)`,
+                  [resp.user.id, email]
                 );
               }
             } catch (e) {
               console.log("[supertokens] mirror signup failed:", e.message);
+            }
+            return resp;
+          },
+          signInPOST: async (input) => {
+            const resp = await o.signInPOST(input);
+            try {
+              if (resp && resp.status === "OK" && resp.user) {
+                const email =
+                  resp.user.email ||
+                  (resp.user.emails && resp.user.emails[0]) ||
+                  (resp.user.loginMethods && resp.user.loginMethods[0] && resp.user.loginMethods[0].email) ||
+                  null;
+                await db().query(
+                  `INSERT INTO users (id, email, role) VALUES ($1, $2, 'user')
+                   ON CONFLICT (id) DO UPDATE SET email = COALESCE(NULLIF(users.email,''), EXCLUDED.email)`,
+                  [resp.user.id, email]
+                );
+              }
+            } catch (e) {
+              console.log("[supertokens] mirror signin failed:", e.message);
             }
             return resp;
           },

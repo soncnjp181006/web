@@ -108,5 +108,18 @@ module.exports = (container) => {
     res.json({ routes: routes.filter((x) => !x.includes("health")), count: routes.length });
   });
 
+  /* Collector cho các demo client-side (#25 token theft, #51 tracking):
+     "analytics"/attacker script gửi event vào đây; GET list = "attacker view". */
+  const telemetry = [];
+  r.post("/api/telemetry", (req, res) => {
+    const ev = { at: new Date().toISOString(), ...(req.body || {}) };
+    telemetry.push(ev);
+    if (telemetry.length > 500) telemetry.shift();
+    res.json({ ok: true, received: ev });
+  });
+  r.get("/api/telemetry", (req, res) => {
+    res.json({ events: telemetry.slice(-100), count: telemetry.length });
+  });
+
   return r;
 };

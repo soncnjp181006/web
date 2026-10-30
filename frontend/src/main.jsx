@@ -1,10 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import * as reactRouterDom from "react-router-dom";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SuperTokens, { SuperTokensWrapper } from "supertokens-auth-react";
-import EmailPassword, { EmailPasswordPreBuiltUI } from "supertokens-auth-react/recipe/emailpassword";
+import EmailPassword from "supertokens-auth-react/recipe/emailpassword";
+import * as EPUI from "supertokens-auth-react/recipe/emailpassword/prebuiltui";
 import Session, { SessionAuth } from "supertokens-auth-react/recipe/session";
-import { SuperTokensRoute } from "supertokens-auth-react/ui";
+import { getSuperTokensRoutesForReactRouterDom } from "supertokens-auth-react/ui";
+
+// EmailPasswordPreBuiltUI nằm ở subpath prebuiltui (bundle có default + named)
+const EmailPasswordPreBuiltUI = EPUI.EmailPasswordPreBuiltUI ?? EPUI.default;
 
 import App from "./App.jsx";
 import Home from "./pages/Home.jsx";
@@ -20,6 +25,16 @@ import DomXss from "./pages/DomXss.jsx";
 import Lab from "./pages/Lab.jsx";
 import Debug from "./pages/Debug.jsx";
 import OAuthDemo from "./pages/OAuthDemo.jsx";
+import Storage from "./pages/Storage.jsx";
+import Injection from "./pages/Injection.jsx";
+import Redirects from "./pages/Redirects.jsx";
+import ClientAuth from "./pages/ClientAuth.jsx";
+import PostMessage from "./pages/PostMessage.jsx";
+import Workers from "./pages/Workers.jsx";
+import Leaks from "./pages/Leaks.jsx";
+import PathDos from "./pages/PathDos.jsx";
+import Cache from "./pages/Cache.jsx";
+import Supply from "./pages/Supply.jsx";
 import "./styles.css";
 
 // [auth] Supertokens: EmailPassword (sign up / sign in with email+password).
@@ -41,7 +56,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <SuperTokensWrapper>
       <BrowserRouter>
         <Routes>
-          <Route path="/auth/*" element={<SuperTokensRoute preBuiltUIList={[EmailPasswordPreBuiltUI]} />} />
+          {/* Supertokens prebuilt UI: sign in / sign up / reset password tại /auth/* */}
+          {getSuperTokensRoutesForReactRouterDom(reactRouterDom, [EmailPasswordPreBuiltUI])}
 
           <Route path="/" element={<App />}>
             <Route index element={<Home />} />
@@ -79,6 +95,16 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="lab" element={<Lab />} />
             <Route path="debug" element={<Debug />} />
             <Route path="oauth-demo" element={<OAuthDemo />} />
+            <Route path="storage" element={<Storage />} />
+            <Route path="injection" element={<Injection />} />
+            <Route path="redirects" element={<Redirects />} />
+            <Route path="clientauth" element={<ClientAuth />} />
+            <Route path="postmessage" element={<PostMessage />} />
+            <Route path="workers" element={<Workers />} />
+            <Route path="leaks" element={<Leaks />} />
+            <Route path="pathdos" element={<PathDos />} />
+            <Route path="cache" element={<Cache />} />
+            <Route path="supply" element={<Supply />} />
             <Route path="*" element={<div className="page"><h2>404</h2><p>Try the nav above.</p></div>} />
           </Route>
         </Routes>

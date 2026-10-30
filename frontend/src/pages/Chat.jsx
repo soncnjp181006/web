@@ -17,7 +17,16 @@ export default function Chat() {
       return;
     }
     wsRef.current = ws;
-    ws.onopen = () => setStatus("connected");
+    ws.onopen = () => {
+      setStatus("connected");
+      // [VULN #38][#25] client leaks stored credentials/token over the
+      // unauthenticated, origin-unchecked WebSocket on connect
+      const jwt = localStorage.getItem("vulnshop_jwt");
+      const creds = localStorage.getItem("vulnshop_creds");
+      if (jwt || creds) {
+        ws.send(JSON.stringify({ system: true, text: `[leak] client token/creds broadcast: ${(jwt || creds).slice(0, 60)}...` }));
+      }
+    };
     ws.onclose = () => setStatus("disconnected");
     ws.onmessage = (ev) => {
       // [VULN #8][#60] messages rendered as raw HTML -> XSS via WebSocket

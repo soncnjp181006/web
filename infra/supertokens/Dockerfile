@@ -3,4 +3,6 @@ FROM supertokens/supertokens-postgresql:latest
 
 # Configure via env on the Render service:
 #   POSTGRESQL_CONNECTION_URI = <Render Postgres connection string>
-# listens on 3563
+# NOTE: the core listens on port 3567 by default (verified) - connect at
+# http://<service-name>:3567
+EXPOSE 3567

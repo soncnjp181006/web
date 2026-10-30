@@ -27,7 +27,7 @@ services:
           name: vulnshop-redis
           property: connectionString
       - key: SUPERTOKENS_CONNECTION_URI
-        value: http://vulnshop-st:3563
+        value: http://vulnshop-st:3567
       - key: INTERNAL_PORT
         value: "4000"
       - key: NODE_ENV

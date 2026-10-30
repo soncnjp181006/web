@@ -16,6 +16,17 @@ const links = [
   ["/lab", "Attack lab"],
   ["/oauth-demo", "OAuth"],
   ["/debug", "Debug"],
+  // ---- client-side labs (60 vulns phía browser) ----
+  ["/storage", "Storage/Token"],
+  ["/injection", "Injection (HTML/CSS/JS)"],
+  ["/redirects", "Redirects"],
+  ["/clientauth", "Client auth/logic"],
+  ["/postmessage", "postMessage"],
+  ["/workers", "Worker/SW"],
+  ["/leaks", "XS-Leaks"],
+  ["/pathdos", "Path/DoS"],
+  ["/cache", "Cache"],
+  ["/supply", "Supply chain"],
 ];
 
 export default function App() {

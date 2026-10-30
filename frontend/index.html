@@ -11,10 +11,19 @@
     />
     <!-- [VULN #43] information disclosure in comments -->
     <!-- TODO: staging creds admin@vulnshop.local / admin123 (see /api/debug/config). Remove before... ah, never mind. -->
+    <!-- [VULN #17] more "secrets" in comments: deploy key AKIA_VULNSHOP_FAKE1234 -->
     <title>VulnShop - Intentionally Vulnerable Training App</title>
+    <!-- [VULN #53] DNS prefetch leak: browser resolves attacker host on page load -->
+    <link rel="dns-prefetch" href="//telemetry.attacker-cdn.tld" />
+    <link rel="dns-prefetch" href="//pixel.vulnshop-analytics.tld" />
   </head>
   <body>
     <div id="root"></div>
+    <!-- [VULN #30] third-party script WITHOUT SRI (no integrity/crossorigin)
+         + [VULN #18] API key exposed in the request URL -->
+    <script src="/3rd-party-widget.js?apiKey=AIzaSyB_FAKE-MAPS-KEY-1234567890abcdefg"></script>
+    <!-- [VULN #51] third-party tracker (persistent uid + beacons) -->
+    <script src="/tracker.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

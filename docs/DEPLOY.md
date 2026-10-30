@@ -26,7 +26,7 @@ git push -u origin main
 1. Render Dashboard → **New +** → **Blueprint** → chọn repo vừa push → **Apply**.
 2. Render sẽ tạo 4 service theo `render.yaml`:
    - `vulnshop-backend` (Docker web service, health check `/health`)
-   - `vulnshop-st` (Supertokens core, private service :3563)
+   - `vulnshop-st` (Supertokens core, private service :3567)
    - `vulnshop-redis` (Key Value, free)
    - `vulnshop-db` (PostgreSQL, free — **lưu ý: DB free của Render hết hạn sau 30 ngày**, phải tạo lại hoặc upgrade)
 3. Khi apply, Render hỏi các biến `sync: false` — điền:
@@ -93,7 +93,7 @@ Các demo sau cần chỉnh Cloudflare để "sống":
 | Triệu chứng | Nguyên nhân / cách xử lý |
 | --- | --- |
 | `/health` OK nhưng mọi API lỗi DB | Free Postgres hết hạn sau 30 ngày → tạo DB mới, cập nhật `DATABASE_URL` |
-| Login Supertokens lỗi `connection refused` | ST core chưa sống: kiểm tra service `vulnshop-st` logs; `SUPERTOKENS_CONNECTION_URI` phải là `http://vulnshop-st:3563` |
+| Login Supertokens lỗi `connection refused` | ST core chưa sống: kiểm tra service `vulnshop-st` logs; `SUPERTOKENS_CONNECTION_URI` phải là `http://vulnshop-st:3567` |
 | Email reset không đến | Kiểm tra `SMTP_USER`/`SMTP_PASS` trong Render env; Gmail app password cần spaces giữ nguyên như cấp phát |
 | Chat không kết nối | Đặt `VITE_WS_URL=wss://<backend>/ws/chat` và build lại frontend |
 | 401 liên tục ở Supertokens | Đảm bảo đang truy cập qua domain Pages (cùng origin), không gọi thẳng backend domain từ app |
