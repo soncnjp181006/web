@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- [VULN #41] CSP misconfiguration: allows everything (inline, eval, any origin)
+         - real apps need a strict policy. Also no frame-ancestors -> clickjacking (#39). -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * ws: wss:;"
+    />
+    <!-- [VULN #43] information disclosure in comments -->
+    <!-- TODO: staging creds admin@vulnshop.local / admin123 (see /api/debug/config). Remove before... ah, never mind. -->
+    <title>VulnShop - Intentionally Vulnerable Training App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

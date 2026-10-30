@@ -1,0 +1,85 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install deps
+        run: npm install --no-audit --no-fund
+      - name: Syntax check (node --check all files)
+        run: npm run syntax-check
+      - name: Dependency audit (findings EXPECTED - vulnerable on purpose #72/#73)
+        run: npm audit --audit-level=high || true
+      - name: Boot smoke test (no DB required for /health)
+        run: |
+          PORT=4123 INTERNAL_PORT=4124 node server.js &
+          SERVER_PID=$!
+          sleep 6
+          curl -fsS http://127.0.0.1:4124/health
+          kill $SERVER_PID || true
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+  deploy-backend:
+    needs: [backend]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "RENDER_DEPLOY_HOOK_URL secret not set - skipping (autoDeploy already handles push)"; exit 0; fi
+          curl -fsS -X POST "$HOOK"
+
+  deploy-frontend:
+    needs: [frontend]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+        env:
+          RENDER_BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+      - name: Deploy to Cloudflare Pages (wrangler)
+        working-directory: frontend
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_API_TOKEN" ]; then echo "CLOUDFLARE_API_TOKEN secret not set - skipping (use CF Pages Git integration instead)"; exit 0; fi
+          npx wrangler@3 pages deploy dist --project-name=vulnshop --branch=main

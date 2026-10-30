@@ -1,0 +1,7 @@
+# Cloudflare Pages proxy -> Render backend (same origin => ST cookies work as 1st-party)
+# __BACKEND__ is replaced at build time from RENDER_BACKEND_URL (scripts/gen-redirects.mjs)
+/api/*        __BACKEND__/api/:splat    200
+/auth/*       __BACKEND__/auth/:splat   200
+/graphql      __BACKEND__/graphql       200
+/graphql/*    __BACKEND__/graphql/:splat 200
+/uploads/*    __BACKEND__/uploads/:splat 200
