@@ -17,7 +17,16 @@ const schema = buildSchema(`
     user(id: String!): User          # BOLA
     users: [User]                    # full dump
     product(id: Int!): Product
-    products: [Product]
+    products(category: String): [Product]
+    builds: [Build]                  # all builds, any owner (BOLA)
+    build(id: Int!): Build
+  }
+  type Build {
+    id: Int
+    name: String
+    config: String
+    total: Float                     # client-supplied (#60)
+    owner: User                      # cycle back to User
   }
   type User {
     id: String
@@ -102,9 +111,40 @@ module.exports = (container) => {
       const p = rows[0];
       return p ? { id: p.id, name: p.name, price: Number(p.price), internalCost: Number(p.internal_cost) } : null;
     },
-    products: async () => {
-      const { rows } = await db.query("SELECT * FROM products");
+    products: async ({ category }) => {
+      // [VULN #1] category concatenated raw
+      const { rows } = await db.query(
+        `SELECT * FROM products ${category ? "WHERE category = '" + category + "'" : ""} ORDER BY id`
+      );
       return rows.map((p) => ({ id: p.id, name: p.name, price: Number(p.price), internalCost: Number(p.internal_cost) }));
+    },
+    builds: async () => {
+      const { rows } = await db.query("SELECT * FROM builds"); // [VULN #49] every user's builds
+      return rows.map((b) => ({
+        id: b.id,
+        name: b.name,
+        config: b.config,
+        total: Number(b.total),
+        owner: async () => {
+          const o = await db.query("SELECT * FROM users WHERE id = $1", [b.user_id]);
+          return rowToUser(o.rows[0]);
+        },
+      }));
+    },
+    build: async ({ id }) => {
+      const { rows } = await db.query("SELECT * FROM builds WHERE id = $1", [id]);
+      const b = rows[0];
+      if (!b) return null;
+      return {
+        id: b.id,
+        name: b.name,
+        config: b.config,
+        total: Number(b.total),
+        owner: async () => {
+          const o = await db.query("SELECT * FROM users WHERE id = $1", [b.user_id]);
+          return rowToUser(o.rows[0]);
+        },
+      };
     },
   };
 

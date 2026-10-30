@@ -70,7 +70,11 @@ app.get("/health", (req, res) => res.json({ ok: true, uptime: process.uptime() }
 /* ------------------------------- routers ---------------------------------- */
 app.use(require("./src/routes/auth")(container));
 app.use(require("./src/routes/products")(container));
+app.use(require("./src/routes/cart")(container));
 app.use(require("./src/routes/orders")(container));
+app.use(require("./src/routes/support")(container));
+app.use(require("./src/routes/wishlist")(container));
+app.use(require("./src/routes/builds")(container));
 app.use(require("./src/routes/admin")(container));
 app.use(require("./src/routes/files")(container));
 app.use(require("./src/routes/utils")(container));

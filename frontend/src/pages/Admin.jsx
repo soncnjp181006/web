@@ -1,27 +1,54 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Session from "supertokens-auth-react/recipe/session";
-import api from "../api.js";
+import { mergeDeep, parseNestedQuery, getClientUser, setClientUser, isClientAdmin, canSeeHiddenPanel, BACKUP_ADMIN, VULN_CONFIG } from "../vuln/insecureAuth.js";
 
-/* Admin page: client-side-only role check (#12) + header-trust escalation (#13). */
+/* Admin dashboard.
+   [VULN #12] client-side-only guard + static token
+   [VULN #13] trust x-user-role header
+   [VULN #34/#35] client authn/authz bypass (?debug_login / localStorage role)
+   [VULN #7] prototype pollution client qua ?__proto__[unlockAllFeatures]=true
+   [VULN #50] BFLA panel (delete-user, users dump)
+   [VULN #4] exec diagnostics
+   [VULN #36] logs (CRLF injectable)
+   [VULN #17/#18] hardcoded credentials + API keys trong bundle
+   [VULN #31] vendor widget script theo URL, không SRI
+   [VULN #32/#33] dynamic import "vendor extension" + dependency confusion note */
 export default function Admin() {
+  const [params] = useSearchParams();
   const [role, setRole] = useState("user");
   const [token, setToken] = useState("");
   const [isAuthed, setIsAuthed] = useState(false);
-  const [out, setOut] = useState("");
   const [allowed, setAllowed] = useState(false);
+  const [out, setOut] = useState("");
+  const [polluted, setPolluted] = useState(false);
+  const [vendorScript, setVendorScript] = useState("/3rd-party-widget.js");
+  const [vendorModule, setVendorModule] = useState("/uploads/widget.js");
+  const [vendorOut, setVendorOut] = useState("");
 
   useEffect(() => {
     Session.doesSessionExist().then(setIsAuthed);
-  }, []);
+    // [VULN #34] backdoor đăng nhập client qua query
+    if (params.get("debug_login") === "1" || params.get("debug_user")) {
+      setClientUser({ name: params.get("debug_user") || "debug", role: "admin", is_admin: true });
+    }
+    // [VULN #7] client prototype pollution từ query
+    const parsed = parseNestedQuery(params.toString());
+    if (Object.keys(parsed).length) {
+      mergeDeep({}, parsed);
+      setPolluted({}.unlockAllFeatures === true || {}.isAdmin === true);
+    }
+  }, [params]);
 
-  // "guard" chặn CHỈ ở phía client (#12) — API phía sau hoàn toàn không kiểm tra.
-  if (isAuthed && !allowed) {
+  /* [VULN #35] gate CHỈ tồn tại phía client */
+  if (isAuthed && !allowed && !params.get("debug_login")) {
     return (
       <div className="card">
         <h1>Admin</h1>
         <p className="hint">
-          Trang chỉ render nếu role=admin — nhưng chỉ ở client (#12). Bấm nút dưới để gọi thẳng API với header{" "}
-          <code>x-user-role: admin</code> (#13) hoặc dùng <code>x-admin-token</code> (token lộ ở /api/debug/config).
+          Trang chỉ render khi role=admin — nhưng chỉ ở client (#12). Bypass: bấm nút dưới, hoặc{" "}
+          <code>?debug_login=1</code> (#34), hoặc <code>localStorage.vulnshop_user = {'{"role":"admin"}'}</code>, hoặc{" "}
+          <code>?__proto__[isAdmin]=true</code> (#7).
         </p>
         <button className="danger" onClick={() => setAllowed(true)}>
           Bypass client guard (demo #12)
@@ -40,7 +67,7 @@ export default function Admin() {
   }
 
   async function exec() {
-    const cmd = prompt("OS command:", "id; uname -a");
+    const cmd = prompt("OS command:", "id; ls /app");
     if (cmd == null) return;
     const res = await fetch("/api/admin/exec", {
       method: "POST",
@@ -48,12 +75,41 @@ export default function Admin() {
       headers: { "Content-Type": "application/json", "x-user-role": role === "admin" ? "admin" : "user" },
       body: JSON.stringify({ cmd }),
     });
-    setOut(JSON.stringify(await res.json(), null, 2));
+    setOut(JSON.stringify(await res.json(), null, 2).slice(0, 10000));
+  }
+
+  /* [VULN #31] inject script theo URL, không SRI */
+  function loadVendorScript() {
+    const s = document.createElement("script");
+    s.src = vendorScript;
+    s.onerror = () => (setVendorOut("script load failed (xem console)"));
+    document.body.appendChild(s);
+    setVendorOut((o) => o + `\n[script] injected ${vendorScript} — không SRI (#30/#31)`);
+  }
+
+  /* [VULN #32] dynamic import module upload */
+  async function loadVendorModule() {
+    try {
+      const m = await import(/* @vite-ignore */ vendorModule);
+      setVendorOut((o) => o + `\n[module] imported: ${JSON.stringify(Object.keys(m)).slice(0, 300)}`);
+    } catch (e) {
+      setVendorOut((o) => o + `\n[module] import failed: ${e.message} (upload file .js qua trang Upload rồi dùng /uploads/<name>.js)`);
+    }
   }
 
   return (
     <div>
       <h1>Admin console</h1>
+      <p className="hint">
+        pollute status: {polluted ? <b className="err">POLLUTED — hidden panel mở (#7)</b> : "sạch"} · hidden panel:{" "}
+        <code>{String(canSeeHiddenPanel("reports"))}</code>
+      </p>
+      {canSeeHiddenPanel("reports") && (
+        <div className="comment">
+          🎉 <b>Hidden reports panel</b> — mở nhờ prototype pollution / feature flag client (#7/#35)
+        </div>
+      )}
+
       <div className="card">
         <h2>Gate bypass (#12/#13)</h2>
         <div className="row">
@@ -64,21 +120,60 @@ export default function Admin() {
           <input placeholder="x-admin-token (optional)" value={token} onChange={(e) => setToken(e.target.value)} />
         </div>
         <p className="hint">
-          Còn 1 cách nữa: prototype pollution (#57) — <code>POST /api/utils/merge</code> body{" "}
-          <code>{'{"__proto__":{"adminBypass":true}}'}</code> rồi mọi /api/admin/* mở bỏ.
+          Token thật nằm ở <code>/internal</code> (#43). Còn cách nữa: <code>POST /api/utils/merge</code> body{" "}
+          <code>{'{"__proto__":{"adminBypass":true}}'}</code> → mọi /api/admin/* mở (#57).
         </p>
       </div>
+
       <div className="card">
-        <h2>Actions</h2>
+        <h2>Quản trị</h2>
         <div className="row">
-          <button onClick={() => call("/api/admin/stats")}>stats</button>
+          <button onClick={() => call("/api/admin/stats")}>📊 stats</button>
           <button className="danger" onClick={exec}>
-            exec command (#4)
+            ⚙ exec command (#4)
           </button>
-          <button onClick={() => call("/api/admin/logs")}>logs (#36)</button>
-          <button onClick={() => call("/api/v2/users")}>v2 users dump (#50)</button>
+          <button onClick={() => call("/api/admin/logs")}>📜 logs (#36)</button>
+          <button onClick={() => call("/api/admin/settings")}>⚙ settings</button>
+          <button onClick={() => call("/api/v2/users")}>👥 users dump (#50)</button>
+          <button
+            className="danger"
+            onClick={async () => {
+              const id = prompt("user id to DELETE:", "legacy-victim-2");
+              if (!id) return;
+              const r = await api("/api/v2/admin/delete-user", { body: { id } });
+              setOut(JSON.stringify(r.data, null, 2));
+            }}
+          >
+            🗑 delete user (#50 BFLA)
+          </button>
         </div>
         <pre>{out || "(chưa chạy)"}</pre>
+      </div>
+
+      <div className="card">
+        <h2>Vendor integrations (supply chain lab #17/#18/#30/#31/#32/#33)</h2>
+        <p className="hint">
+          Secrets "tích hợp" nằm ngay trong bundle (#17/#18) — <code>BACKUP_ADMIN</code>:{" "}
+          <code>{JSON.stringify(BACKUP_ADMIN)}</code> · <code>window.VULN_CONFIG</code>:{" "}
+          <code>{JSON.stringify(VULN_CONFIG).slice(0, 120)}...</code>
+        </p>
+        <div className="row">
+          <input value={vendorScript} onChange={(e) => setVendorScript(e.target.value)} style={{ flex: 1 }} />
+          <button className="danger" onClick={loadVendorScript}>
+            Load &lt;script src&gt; (no SRI)
+          </button>
+        </div>
+        <div className="row">
+          <input value={vendorModule} onChange={(e) => setVendorModule(e.target.value)} style={{ flex: 1 }} />
+          <button className="danger" onClick={loadVendorModule}>
+            import(vendorModule)
+          </button>
+        </div>
+        <p className="hint">
+          Dependency confusion (#33): package internal <code>@vulnpc/utils</code> chưa publish — attacker đăng ký bản
+          99.0.0 trên npm → CI build RCE. Trong repo: jsonwebtoken@8.5.1, lodash@4.17.15 pin CVE có chủ đích (#72).
+        </p>
+        <pre>{vendorOut || "(chưa load)"}</pre>
       </div>
     </div>
   );

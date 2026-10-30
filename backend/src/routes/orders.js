@@ -3,6 +3,8 @@
  * BOLA/BFLA (#49/#50) on /api/v2, SSTI (#30).
  */
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
 const _ = require("lodash");
 const { currentUserId } = require("../auth/current-user");
 
@@ -121,6 +123,42 @@ module.exports = (container) => {
       });
       const out = compiled({ user });
       res.type("text/plain").send(out);
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  /* [VULN #22] invoice "download" - file param joins the invoice dir unsanitized.
+     payload: ?file=../../../../etc/passwd */
+  r.get("/api/orders/:id/invoice", (req, res) => {
+    const file = String(req.query.file || "invoice.pdf");
+    const base = path.join(__dirname, "..", "views", "invoices");
+    const p = path.join(base, file);
+    fs.readFile(p, (err, data) => {
+      if (err) {
+        return res.status(404).json({ error: err.message, resolvedPath: p, hint: "traversal (#22): ../../../../etc/passwd" });
+      }
+      res.setHeader("Content-Type", "application/pdf");
+      res.send(data);
+    });
+  });
+
+  /* RMA / warranty claim -> opens a support ticket (business flow) */
+  r.post("/api/orders/:id/rma", async (req, res, next) => {
+    try {
+      const uid = await currentUserId(req, container);
+      if (!uid) return res.status(401).json({ error: "login first" });
+      const reason = String((req.body || {}).reason || "");
+      const { rows } = await db.query(
+        "INSERT INTO tickets (user_id, subject) VALUES ($1,$2) RETURNING *",
+        [uid, `[RMA] Đơn #${req.params.id}: ${reason.slice(0, 80)}`]
+      );
+      await db.query("INSERT INTO ticket_messages (ticket_id, author, body) VALUES ($1,$2,$3)", [
+        rows[0].id,
+        uid,
+        `Yêu cầu bảo hành/RMA cho đơn #${req.params.id}. Lý do: ${reason}`,
+      ]);
+      res.json({ ticket: rows[0] });
     } catch (e) {
       next(e);
     }

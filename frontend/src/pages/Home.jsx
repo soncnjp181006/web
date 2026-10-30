@@ -1,75 +1,99 @@
 import React, { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../api.js";
 
+/* Trang chủ VulnPC Shop.
+   [VULN #9] banner khuyến mãi đi qua open-redirect endpoint của server.
+   [VULN #2] ô tìm kiếm -> reflected XSS ở trang /shop. */
+const CATS = [
+  ["pc", "🖥 PC dựng sẵn"],
+  ["cpu", "🧠 CPU"],
+  ["gpu", "🎮 VGA"],
+  ["ram", "🧬 RAM"],
+  ["mainboard", "🔩 Mainboard"],
+  ["storage", "💾 SSD/HDD"],
+  ["psu", "🔌 PSU"],
+  ["case", "📦 Case"],
+  ["monitor", "🖥 Monitor"],
+  ["peripheral", "⌨ Gear"],
+];
+
 export default function Home() {
-  const [params, setParams] = useSearchParams();
-  const q = params.get("q") || "";
-  const [products, setProducts] = useState([]);
-  const [raw, setRaw] = useState(null);
+  const [deals, setDeals] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (q) {
-      // [VULN #1] q goes straight into raw SQL on the backend
-      api(`/api/products/search?q=${encodeURIComponent(q)}`).then((r) => {
-        setRaw(r.data);
-        setProducts((r.data && r.data.rows) || []);
-      });
-    } else {
-      api("/api/products").then((r) => setProducts((r.data && r.data.products) || []));
-    }
-  }, [q]);
+    api("/api/products/deals").then((r) => setDeals((r.data && r.data.deals) || []));
+  }, []);
 
   return (
     <div>
-      <h1>VulnShop</h1>
-      <div className="card">
+      <div className="hero">
+        <h1>Dựng PC mơ ước của bạn — từ Office tới RTX 4090</h1>
+        <p>Trả góp 0% · Bảo hành 36 tháng · Build test trước khi giao · Hỗ trợ trực tuyến 24/7</p>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             const v = new FormData(e.target).get("q");
-            setParams(v ? { q: v } : {});
+            navigate(v ? `/shop?q=${encodeURIComponent(v)}` : "/shop");
           }}
+          className="row"
         >
-          <div className="row">
-            <input name="q" defaultValue={q} placeholder="search products..." style={{ flex: 1 }} />
-            <button className="primary">Search</button>
-          </div>
+          <input name="q" placeholder="Tìm CPU, GPU, PC gaming..." style={{ flex: 1, maxWidth: 520 }} />
+          <button className="primary">Tìm kiếm</button>
+          <Link to="/build">
+            <button type="button">🛠 Tự build PC</button>
+          </Link>
         </form>
-        {q && (
-          <p className="hint">
-            SQLi demo (#1): thử{" "}
-            <code>%' OR 1=1--</code> hoặc{" "}
-            <code>%' UNION SELECT 1, email, password_hash, 0, 0, 'x' FROM users--</code>
-          </p>
-        )}
-        {/* [VULN #8] reflected XSS: search term rendered as raw HTML */}
-        {q && (
-          <h3>
-            Bạn đã tìm: <span style={{ color: "#f85149" }} dangerouslySetInnerHTML={{ __html: q }} />
-          </h3>
-        )}
       </div>
 
-      <div className="grid">
-        {products.map((p) => (
-          <div className="card" key={p.id}>
-            <b>{p.name}</b>
-            <p className="hint">{p.description}</p>
-            <div className="row">
-              <span>${p.price}</span>
-              <Link to={`/product/${p.id}`}>Xem →</Link>
-            </div>
-          </div>
+      <div className="cats">
+        {CATS.map(([c, label]) => (
+          <Link key={c} to={`/shop?category=${c}`}>
+            {label}
+          </Link>
         ))}
       </div>
 
-      {raw && (
-        <div className="card">
-          <h3>Raw SQL response (info disclosure #43)</h3>
-          <pre>{JSON.stringify(raw, null, 2)}</pre>
+      <div className="card">
+        <h2>🔥 Deal hot trong ngày</h2>
+        <p className="hint">
+          Banner đối tác:{" "}
+          {/* [VULN #9/#32] redirect qua endpoint server - url không được kiểm tra */}
+          <a href={`/api/net/redirect?url=${encodeURIComponent("https://example.com/partner-sale")}`}>
+            Sale Mainboard & PSU tại trang đối tác →
+          </a>{" "}
+          (open redirect #9) · Xem <Link to="/deals">trang Deals</Link>
+        </p>
+        <div className="grid">
+          {deals.map((p) => (
+            <div className="card" key={p.id}>
+              <b>{p.name}</b>
+              <p className="hint">{p.brand} · {p.category}</p>
+              <div className="row">
+                <span className="price-big">${p.price}</span>
+                <Link to={`/product/${p.id}`}>
+                  <button>Xem chi tiết</button>
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
+
+      <div className="grid">
+        {[
+          ["🚚", "Giao nhanh 2h", "Nội thành HCM & Hà Nội"],
+          ["🛡", "Bảo hành 36 tháng", "RMA online, kỹ thuật viên hỗ trợ qua ticket"],
+          ["💳", "Trả góp 0%", "Quẹt thẻ tại cửa hàng hoặc chuyển ví"],
+          ["🛠", "Build theo yêu cầu", "Cấu hình tương thích tự kiểm tra"],
+        ].map(([icon, t, d]) => (
+          <div className="card" key={t}>
+            <h3>{icon} {t}</h3>
+            <p className="hint">{d}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -43,7 +43,7 @@ module.exports = (container) => {
         "INSERT INTO legacy_sessions (token, user_id) VALUES ($1, $2) ON CONFLICT (token) DO UPDATE SET user_id = $2",
         [sessionToken, rows[0].id]
       );
-      res.setHeader("Set-Cookie", `session=${sessionToken}; Path=/; SameSite=None`);
+      res.setHeader("Set-Cookie", `session=${sessionToken}; Path=/; ${req.secure || req.headers["x-forwarded-proto"] === "https" ? "SameSite=None; Secure" : "SameSite=Lax"}`);
       res.json({ authenticated: rows[0], sessionToken, signatureVerified: false, note: "assertion accepted WITHOUT signature check (#63)" });
     } catch (e) {
       next(e);

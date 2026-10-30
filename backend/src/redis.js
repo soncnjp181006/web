@@ -45,7 +45,8 @@ async function incrWindow(key, windowMs) {
   if (!c) return memIncrWindow(key, windowMs);
   try {
     const n = await c.incr(key);
-    if (n === 1) await c.pexpire(key, windowMs);
+    // NX: chỉ đặt TTL khi chưa có -> không bao giờ khoá vĩnh viễn
+    await c.expire(key, Math.ceil(windowMs / 1000), { NX: true }).catch(() => {});
     return n;
   } catch {
     return memIncrWindow(key, windowMs);

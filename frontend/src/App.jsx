@@ -3,30 +3,44 @@ import { Outlet, Link, NavLink } from "react-router-dom";
 import Session from "supertokens-auth-react/recipe/session";
 import { useEffect, useState } from "react";
 
-const links = [
-  ["/", "Shop"],
-  ["/orders", "Orders"],
-  ["/profile", "Profile"],
-  ["/upload", "Upload"],
-  ["/files", "Files"],
-  ["/admin", "Admin"],
-  ["/chat", "Chat"],
-  ["/legacy", "Legacy login"],
-  ["/domxss", "DOM XSS lab"],
-  ["/lab", "Attack lab"],
-  ["/oauth-demo", "OAuth"],
-  ["/debug", "Debug"],
-  // ---- client-side labs (60 vulns phía browser) ----
-  ["/storage", "Storage/Token"],
-  ["/injection", "Injection (HTML/CSS/JS)"],
-  ["/redirects", "Redirects"],
-  ["/clientauth", "Client auth/logic"],
-  ["/postmessage", "postMessage"],
-  ["/workers", "Worker/SW"],
-  ["/leaks", "XS-Leaks"],
-  ["/pathdos", "Path/DoS"],
-  ["/cache", "Cache"],
-  ["/supply", "Supply chain"],
+const groups = [
+  {
+    label: "Shop",
+    links: [
+      ["/", "Trang chủ"],
+      ["/shop", "Cửa hàng"],
+      ["/build", "Build PC"],
+      ["/compare", "So sánh"],
+      ["/deals", "Deals"],
+    ],
+  },
+  {
+    label: "Của bạn",
+    links: [
+      ["/cart", "🛒 Giỏ hàng"],
+      ["/orders", "Đơn hàng"],
+      ["/wishlist", "❤ Wishlist"],
+      ["/support", "Hỗ trợ"],
+      ["/profile", "Hồ sơ"],
+      ["/sessions", "Thiết bị"],
+    ],
+  },
+  {
+    label: "Khác",
+    links: [
+      ["/stores", "Cửa hàng vật lý"],
+      ["/offline", "Offline"],
+      ["/notifications", "Thông báo"],
+    ],
+  },
+  {
+    label: "Nhân viên",
+    links: [
+      ["/legacy", "Staff portal (legacy)"],
+      ["/admin", "Admin"],
+      ["/internal", "Diagnostics"],
+    ],
+  },
 ];
 
 export default function App() {
@@ -38,14 +52,13 @@ export default function App() {
   return (
     <div className="app">
       <div className="banner">
-        ⚠️ VulnShop — <b>app chứa lỗi bảo mật CỐ Ý</b> dùng để học bảo mật. Không dùng dữ liệu thật!
+        ⚠️ <b>VulnPC Shop</b> — website bán PC chứa lỗi bảo mật <b>CỐ Ý</b> dùng để học bảo mật. Không dùng dữ liệu thật!
       </div>
-      <nav>
-        {links.map(([to, label]) => (
-          <NavLink key={to} to={to} className={({ isActive }) => (isActive ? "active" : "")}>
-            {label}
-          </NavLink>
-        ))}
+      <div className="topbar">
+        <Link to="/" className="logo">
+          🔥 VulnPC<span className="logo-accent">Shop</span>
+        </Link>
+        <span className="topbar-hint">Gaming · Workstation · Linh kiện — giao toàn quốc</span>
         {hasSession ? (
           <button
             className="signout"
@@ -58,15 +71,27 @@ export default function App() {
           </button>
         ) : (
           <Link className="signin" to="/auth">
-            Sign in / Sign up (Supertokens)
+            Đăng nhập / Đăng ký
           </Link>
         )}
+      </div>
+      <nav>
+        {groups.map((g) => (
+          <span className="nav-group" key={g.label}>
+            {g.links.map(([to, label]) => (
+              <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => (isActive ? "active" : "")}>
+                {label}
+              </NavLink>
+            ))}
+            <span className="nav-sep" />
+          </span>
+        ))}
       </nav>
       <main className="page">
         <Outlet />
       </main>
       <footer>
-        Training-only app · map đầy đủ 75 lỗi xem <Link to="/debug">/debug</Link> và docs/VULNS.md
+        VulnPC Shop · Hotline 1900-VULN · Map đầy đủ 135 lỗi xem <Link to="/internal">/internal</Link> và docs/VULNS.md
       </footer>
     </div>
   );

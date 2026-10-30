@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import api from "../api.js";
 
-export default function Debug() {
+/* Staff diagnostics (nội bộ).
+   [VULN #42/#43] config dump, stack trace, route map, đường dẫn tuyệt đối
+   [VULN #70] headers — không HSTS/XFO/nosniff
+   [VULN #41] CSP permissive
+   [VULN #37/#65] cache store public
+   [VULN #50/#44] users dump
+   [VULN #38] web cache deception */
+export default function Internal() {
   const [out, setOut] = useState("");
 
   async function run(path) {
@@ -12,7 +19,7 @@ export default function Debug() {
 
   return (
     <div>
-      <h1>Debug & info disclosure</h1>
+      <h1>🛠 Staff diagnostics</h1>
       <div className="card">
         <div className="row">
           <button onClick={() => run("/api/debug/config")}>config dump (#42/#43)</button>
@@ -21,24 +28,20 @@ export default function Debug() {
           <button onClick={() => run("/api/headers")}>headers (#70)</button>
           <button onClick={() => run("/api/csp-demo")}>CSP demo (#41)</button>
           <button onClick={() => run("/api/files/list")}>uploads + paths (#43)</button>
-          <button onClick={() => run("/api/v2/users")}>full user dump (#50/#44)</button>
+          <button onClick={() => run("/api/v2/users")}>users dump (#50/#44)</button>
           <button onClick={() => run("/api/cache/store/x")}>cache store (#37)</button>
+          <button onClick={() => run("/api/net/echo-headers")}>echo headers (#37/#65)</button>
+          <button onClick={() => run("/api/enumerate?email=admin@vulnpc.local")}>enumerate (#67)</button>
+          <button onClick={() => run("/api/utils/token")}>weak token (#45)</button>
+          <button onClick={() => run("/api/crypto/encrypt?text=4111111111111111")}>AES-ECB (#47)</button>
         </div>
         <pre>{out || "(chưa chạy)"}</pre>
       </div>
       <div className="card">
         <h2>Web cache deception (#38)</h2>
         <p className="hint">
-          Khi đã đăng nhập: mở <code>/api/cache/profile/whatever.css</code> — profile JSON được trả về với{" "}
-          <code>Cache-Control: public</code> và đuôi .css → Cloudflare cache theo URL. Attacker biết URL (bất kỳ ai),
-          đọc cache sau đó.
-        </p>
-      </div>
-      <div className="card">
-        <h2>Clickjacking demo (#39)</h2>
-        <p className="hint">
-          Không có <code>X-Frame-Options</code> / <code>frame-ancestors</code> → site có thể được nhúng. Mở{" "}
-          <code>/clickjack-demo.html</code> để xem iframe ẩn bấm nút hộ người dùng.
+          Khi đã đăng nhập: mở <code>/api/cache/profile/whatever.css</code> — profile JSON trả về với{" "}
+          <code>Cache-Control: public</code> và đuôi .css → CDN/browser cache theo URL, ai cũng đọc được sau đó.
         </p>
       </div>
     </div>

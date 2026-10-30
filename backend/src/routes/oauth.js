@@ -67,7 +67,7 @@ module.exports = (container) => {
       const crypto2 = require("crypto");
       const sessionToken = crypto2.randomBytes(6).toString("hex");
       const dbq = await db.query("INSERT INTO legacy_sessions (token, user_id) VALUES ($1, $2) ON CONFLICT (token) DO UPDATE SET user_id=$2", [sessionToken, claims.sub]);
-      res.setHeader("Set-Cookie", `session=${sessionToken}; Path=/; SameSite=None`);
+      res.setHeader("Set-Cookie", `session=${sessionToken}; Path=/; ${req.secure || req.headers["x-forwarded-proto"] === "https" ? "SameSite=None; Secure" : "SameSite=Lax"}`);
       res.json({ loggedInAs: rows[0] || claims, sessionToken, note: "no state validation (#62) - CSRF-login possible" });
     } catch (e) {
       next(e);

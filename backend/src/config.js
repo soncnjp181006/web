@@ -6,7 +6,7 @@ const path = require("path");
 const env = process.env;
 
 const config = {
-  appName: "VulnShop",
+  appName: "VulnPC Shop",
 
   // nginx gateway listens here inside the container (Render $PORT)
   gatewayPort: env.PORT || 10000,

@@ -13,36 +13,32 @@ const EmailPasswordPreBuiltUI = EPUI.EmailPasswordPreBuiltUI ?? EPUI.default;
 
 import App from "./App.jsx";
 import Home from "./pages/Home.jsx";
+import Catalog from "./pages/Catalog.jsx";
 import Product from "./pages/Product.jsx";
+import Cart from "./pages/Cart.jsx";
+import Checkout from "./pages/Checkout.jsx";
 import Orders, { OrderDetail } from "./pages/Orders.jsx";
+import BuildPC from "./pages/BuildPC.jsx";
+import Compare from "./pages/Compare.jsx";
+import Deals from "./pages/Deals.jsx";
+import Wishlist from "./pages/Wishlist.jsx";
+import Support, { TicketDetail } from "./pages/Support.jsx";
 import Profile from "./pages/Profile.jsx";
-import Upload from "./pages/Upload.jsx";
-import Files from "./pages/Files.jsx";
 import Admin from "./pages/Admin.jsx";
-import Chat from "./pages/Chat.jsx";
 import LegacyAuth from "./pages/LegacyAuth.jsx";
-import DomXss from "./pages/DomXss.jsx";
-import Lab from "./pages/Lab.jsx";
-import Debug from "./pages/Debug.jsx";
-import OAuthDemo from "./pages/OAuthDemo.jsx";
-import Storage from "./pages/Storage.jsx";
-import Injection from "./pages/Injection.jsx";
-import Redirects from "./pages/Redirects.jsx";
-import ClientAuth from "./pages/ClientAuth.jsx";
-import PostMessage from "./pages/PostMessage.jsx";
-import Workers from "./pages/Workers.jsx";
-import Leaks from "./pages/Leaks.jsx";
-import PathDos from "./pages/PathDos.jsx";
-import Cache from "./pages/Cache.jsx";
-import Supply from "./pages/Supply.jsx";
+import Sessions from "./pages/Sessions.jsx";
+import Stores from "./pages/Stores.jsx";
+import OfflineCenter from "./pages/OfflineCenter.jsx";
+import Notifications from "./pages/Notifications.jsx";
+import Internal from "./pages/Internal.jsx";
 import "./styles.css";
 
 // [auth] Supertokens: EmailPassword (sign up / sign in with email+password).
-// apiDomain = websiteDomain = current origin: Cloudflare Pages proxies /auth
-// and /api to the Render backend, so cookies stay first-party.
+// apiDomain = websiteDomain = current origin: Cloudflare Pages proxies ST API
+// paths to the Render backend, so cookies stay first-party.
 SuperTokens.init({
   appInfo: {
-    appName: "VulnShop",
+    appName: "VulnPC Shop",
     apiDomain: window.location.origin,
     websiteDomain: window.location.origin,
     apiBasePath: "/auth",
@@ -61,7 +57,24 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
           <Route path="/" element={<App />}>
             <Route index element={<Home />} />
+            <Route path="shop" element={<Catalog />} />
             <Route path="product/:id" element={<Product />} />
+            <Route
+              path="cart"
+              element={
+                <SessionAuth>
+                  <Cart />
+                </SessionAuth>
+              }
+            />
+            <Route
+              path="checkout"
+              element={
+                <SessionAuth>
+                  <Checkout />
+                </SessionAuth>
+              }
+            />
             <Route
               path="orders"
               element={
@@ -78,6 +91,26 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 </SessionAuth>
               }
             />
+            <Route path="build" element={<BuildPC />} />
+            <Route path="compare" element={<Compare />} />
+            <Route path="deals" element={<Deals />} />
+            <Route path="wishlist" element={<Wishlist />} />
+            <Route
+              path="support"
+              element={
+                <SessionAuth>
+                  <Support />
+                </SessionAuth>
+              }
+            />
+            <Route
+              path="support/:id"
+              element={
+                <SessionAuth>
+                  <TicketDetail />
+                </SessionAuth>
+              }
+            />
             <Route
               path="profile"
               element={
@@ -86,26 +119,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 </SessionAuth>
               }
             />
-            <Route path="upload" element={<Upload />} />
-            <Route path="files" element={<Files />} />
             <Route path="admin" element={<Admin />} />
-            <Route path="chat" element={<Chat />} />
+            <Route path="sessions" element={<Sessions />} />
+            <Route path="stores" element={<Stores />} />
+            <Route path="offline" element={<OfflineCenter />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="legacy" element={<LegacyAuth />} />
-            <Route path="domxss" element={<DomXss />} />
-            <Route path="lab" element={<Lab />} />
-            <Route path="debug" element={<Debug />} />
-            <Route path="oauth-demo" element={<OAuthDemo />} />
-            <Route path="storage" element={<Storage />} />
-            <Route path="injection" element={<Injection />} />
-            <Route path="redirects" element={<Redirects />} />
-            <Route path="clientauth" element={<ClientAuth />} />
-            <Route path="postmessage" element={<PostMessage />} />
-            <Route path="workers" element={<Workers />} />
-            <Route path="leaks" element={<Leaks />} />
-            <Route path="pathdos" element={<PathDos />} />
-            <Route path="cache" element={<Cache />} />
-            <Route path="supply" element={<Supply />} />
-            <Route path="*" element={<div className="page"><h2>404</h2><p>Try the nav above.</p></div>} />
+            <Route path="internal" element={<Internal />} />
+            <Route path="*" element={<div className="page"><h2>404</h2><p>Trang không tồn tại — thử menu phía trên.</p></div>} />
           </Route>
         </Routes>
       </BrowserRouter>

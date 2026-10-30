@@ -48,8 +48,10 @@ module.exports = (container) => {
          ON CONFLICT (token) DO UPDATE SET user_id = $2`, // re-points attacker-known token -> fixation works
         [token, rows[0].id]
       );
-      // [VULN #16] no HttpOnly (steal via XSS), no Secure, SameSite=None (CSRF-friendly)
-      res.setHeader("Set-Cookie", `session=${token}; Path=/; SameSite=None`);
+      // [VULN #16] no HttpOnly (steal via XSS); SameSite=None+Secure on https,
+      // Lax on http (localhost) — browser rejects None without Secure
+      const isHttps = req.secure || req.headers["x-forwarded-proto"] === "https";
+      res.setHeader("Set-Cookie", `session=${token}; Path=/; ${isHttps ? "SameSite=None; Secure" : "SameSite=Lax"}`);
       res.json({
         ok: true,
         token, // token in response body too

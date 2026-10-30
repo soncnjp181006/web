@@ -1,62 +1,55 @@
-# VulnShop 🏪💣 — Intentionally Vulnerable Training App
+# VulnPC Shop 🔥🖥 — PC Store (Intentionally Vulnerable, Full-featured)
 
-> ⚠️ **CẢNH BÁO**: Đây là ứng dụng chứa lỗi bảo mật **CỐ Ý** (intentionally vulnerable) dùng cho
-> học tập / training / pentest practice — theo phong cách OWASP Juice Shop / DVWA.
-> **KHÔNG** deploy với dữ liệu thật, **KHÔNG** dùng làm production. Khi public lên internet,
-> app sẽ bị scan/tấn công bởi bot trong vài phút — chỉ deploy khi cần lab và tắt khi không dùng.
+> ⚠️ **CẢNH BÁO**: Website bán PC **hoàn chỉnh** chứa lỗi bảo mật **CỐ Ý** (intentionally vulnerable)
+> dùng cho học tập / training / pentest practice — phong cách OWASP Juice Shop. **135 lỗi** (75 backend
+> + 60 client-side) nằm **tự nhiên bên trong từng tính năng** của shop, không phải lab rời rạc.
+> **KHÔNG** dùng dữ liệu thật. Public internet = bot tấn công trong vài phút — tắt khi không dùng.
 
-## Stack
-
-| Thành phần        | Công nghệ                                            |
-| ----------------- | ---------------------------------------------------- |
-| Frontend          | React 18 (Vite) trên **Cloudflare Pages**            |
-| Backend           | Node.js 20 + Express (raw SQL, không ORM) trên **Render** (Docker) |
-| Gateway           | **nginx** chạy cùng container với node (port 10000 → 4000) |
-| Database          | **PostgreSQL** (Render free) — raw SQL, SQL injection toàn bộ app |
-| Cache/Queue       | **Redis** (Render Key Value) — rate limiter, cache demos |
-| Auth              | **Supertokens** (EmailPassword + Session, self-hosted core trên Render) |
-| Email             | SMTP Gmail qua nodemailer (env `SMTP_USER` / `SMTP_PASS`) |
-| CI/CD             | GitHub Actions (build + smoke test + deploy Render/Cloudflare) |
-| DI                | DI container tự viết (`backend/src/di/container.js`) |
+## Tính năng (kết nối xuyên suốt)
 
 ```
-Browser
-  └─ Cloudflare Pages (React SPA, cache/WAF experiments)
-       ├─ / , /static  → Pages static
-       ├─ /api, /auth, /graphql, /uploads → proxy (_redirects) ─┐
-  └─ WebSocket wss://.../ws/chat (direct to backend)            │
-                                                                ▼
-                              Render: nginx gateway :10000 ──► node :4000
-                                                        ├─ PostgreSQL (raw SQL)
-                                                        ├─ Redis
-                                                        └─ Supertokens core (pserv :3563)
+Trang chủ → Cửa hàng (tìm kiếm/lọc/sort) → Chi tiết sản phẩm (review, specs, wishlist)
+   → Giỏ hàng (số lượng, coupon) → Checkout (địa chỉ, thẻ) → Đơn hàng (chi tiết, hóa đơn PDF, RMA)
+   → Hỗ trợ (ticket + live chat WS + đính kèm + email) → Profile (ví, bio, theme, mass-assign)
+   → Admin (quản trị, exec, logs, vendor tools) · Staff portal legacy (JWT/SAML/OAuth)
+Ngoài ra: Build PC, So sánh, Deals, Stores, Offline center, Notifications, Sessions
 ```
+
+| Thành phần | Công nghệ |
+| --- | --- |
+| Frontend | React 18 (Vite) trên **Cloudflare Pages** |
+| Backend | Node.js 20 + Express (raw SQL) trên **Render** (Docker) |
+| Gateway | **nginx** cùng container node (10000 → 4000) |
+| DB | **PostgreSQL** (Render) — raw SQL toàn bộ |
+| Cache | **Redis** (Render Key Value) |
+| Auth | **Supertokens** EmailPassword + Session (self-host core) + legacy staff portal |
+| Email | Gmail SMTP qua nodemailer (env) |
+| CI/CD | GitHub Actions → Render hook / Cloudflare wrangler |
+| DI | container tự viết (`backend/src/di/container.js`) |
 
 ## Cấu trúc
 
 ```
-backend/            Express API + toàn bộ lỗ hổng (mỗi chỗ đánh dấu [VULN #N])
-  nginx/app.conf    gateway config yếu có chủ đích
-  Dockerfile        nginx + node một container
-frontend/           React SPA + trang demo (Lab, DOM XSS, Chat, Admin...)
-infra/supertokens/  Dockerfile Supertokens core
-render.yaml         Render Blueprint (backend + ST core + Redis + Postgres)
-.github/workflows/  CI/CD
-docs/DEPLOY.md      hướng dẫn deploy Render + Cloudflare từng bước
-docs/VULNS.md       map 75 loại lỗ hổng → endpoint + payload mẫu
+backend/            Express API — mọi lỗ hổng đánh dấu [VULN #N]
+  src/routes/       products, cart, orders, support, wishlist, builds, admin,
+                    files, utils, net, xml, oauth, saml, misc, graphql, auth
+  nginx/app.conf    gateway yếu có chủ đích
+frontend/           React SPA — 19 trang shop, lỗi client-side nhúng trong tính năng
+infra/supertokens/  Dockerfile ST core (port 3567)
+render.yaml         Blueprint: backend + ST core + Redis + Postgres
+docs/DEPLOY.md      deploy Render + Cloudflare từng bước
+docs/VULNS.md       MAP 135 lỗi → tính năng + payload mẫu
 ```
 
-## Chạy nhanh sau khi deploy
+## Tài khoản demo (sau khi seed)
 
-1. Đăng nhập Supertokens: nút **Sign in / Sign up** (email + password, có mail reset qua SMTP).
-2. Legacy login (vulnerable): trang **Legacy login** — `admin@vulnshop.local / admin123`,
-   `victim@vulnshop.local / victim123`.
-3. Trang **Attack lab** bấm từng payload mẫu; **DOM XSS lab** cho lỗi client-side;
-   tài liệu đầy đủ trong `docs/VULNS.md`.
+- Supertokens: đăng ký email + password tuỳ ý (UI `/auth`)
+- Legacy staff: `admin@vulnpc.local / admin123`, `victim@vulnpc.local / victim123`
+- Coupon: `WELCOME10`, `PCLOVE50` (race), `BLACKFRIDAY20`
 
-## Checklist an toàn cho người dùng
+## Checklist an toàn
 
-- [ ] Chỉ dùng email test / dữ liệu giả (DB có thể bị dump công khai).
-- [ ] Rotate Gmail app password sau khi xong việc (credential đã từng xuất hiện trong chat).
-- [ ] Tắt/cân nhắc Cloudflare WAF + Bot Fight Mode khi muốn exploit demo hoạt động.
-- [ ] Xóa service Render/Pages khi không dùng nữa.
+- [ ] Chỉ dùng dữ liệu giả
+- [ ] Rotate Gmail app password sau khi xong (đã từng xuất hiện trong chat)
+- [ ] Tắt Cloudflare WAF/Bot Fight Mode khi muốn payload chạy
+- [ ] Xoá service Render/Pages + docker khi xong lab

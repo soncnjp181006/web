@@ -42,6 +42,33 @@ nav a {
 }
 nav a:hover { background: var(--line); color: var(--text); }
 nav a.active { background: #1f6feb33; color: var(--accent); }
+.topbar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  background: linear-gradient(90deg, #0d1117, #141a24);
+}
+.topbar .logo { font-size: 20px; font-weight: 800; color: var(--text); text-decoration: none; }
+.topbar .logo-accent { color: var(--accent); }
+.topbar-hint { color: var(--dim); font-size: 12.5px; flex: 1; }
+.topbar .signin { color: var(--ok); }
+.topbar .signout { margin-left: auto; }
+.nav-group { display: inline-flex; gap: 4px; align-items: center; }
+.nav-sep { width: 1px; height: 16px; background: var(--line); margin: 0 6px; }
+.hero {
+  background: linear-gradient(120deg, #16233a, #0d1117 60%);
+  border: 1px solid var(--line); border-radius: 12px; padding: 28px;
+  margin-bottom: 16px;
+}
+.hero h1 { font-size: 26px; margin: 0 0 8px; }
+.hero p { color: var(--dim); margin: 0 0 14px; }
+.cats { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.cats a {
+  border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px;
+  font-size: 13.5px; color: var(--text); text-decoration: none; background: var(--panel);
+}
+.cats a:hover { border-color: var(--accent); }
+.price-big { font-size: 20px; color: var(--ok); font-weight: 700; }
+.spec-table td:first-child { color: var(--dim); width: 180px; }
 nav .signin { color: var(--ok); }
 nav .signout { margin-left: auto; }
 .page { max-width: 1000px; margin: 0 auto; padding: 20px 16px 60px; }

@@ -10,24 +10,42 @@ module.exports = (container) => {
   const xpath = container.resolve("vulnXpath");
   const r = express.Router();
 
+  /* category filter: [VULN #1] raw concat */
   r.get("/api/products", async (req, res, next) => {
     try {
-      const { rows } = await db.query("SELECT * FROM products ORDER BY id");
-      res.json({ products: rows });
+      const cat = String(req.query.category || "");
+      const brand = String(req.query.brand || "");
+      const sql = `SELECT * FROM products ${cat ? "WHERE category = '" + cat + "'" : ""} ${brand ? (cat ? "AND" : "WHERE") + " brand = '" + brand + "'" : ""} ORDER BY id`;
+      const { rows } = await db.query(sql);
+      res.json({ products: rows, sql: cat || brand ? sql : undefined });
     } catch (e) {
       next(e);
     }
   });
 
-  /* [VULN #1] SQL injection - q is concatenated straight into the query.
+  /* flash deals: featured + low stock */
+  r.get("/api/products/deals", async (req, res, next) => {
+    try {
+      const { rows } = await db.query(
+        "SELECT * FROM products WHERE featured = TRUE ORDER BY price DESC LIMIT 12"
+      );
+      res.json({ deals: rows });
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  /* [VULN #1] SQL injection - q/category/sortcol concatenated straight into the query.
      payload: %' OR 1=1--
-     union:   %' UNION SELECT 1, email, password_hash, 0, 0, 'x' FROM users-- */
+     union:   %' UNION SELECT 1, email, password_hash, 'x', 'user', 0, 0, 0, FALSE, 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x' FROM users-- */
   r.get("/api/products/search", async (req, res, next) => {
     try {
       const q = String(req.query.q || "");
-      const sql = `SELECT id, name, description, price, internal_cost, stock FROM products WHERE name ILIKE '%${q}%' OR description ILIKE '%${q}%' ORDER BY id`;
+      const category = String(req.query.category || "");
+      const sortcol = String(req.query.sortcol || "id");
+      const sql = `SELECT id, name, category, brand, description, price, internal_cost, stock FROM products WHERE (name ILIKE '%${q}%' OR description ILIKE '%${q}%') ${category ? `AND category = '${category}'` : ""} ORDER BY ${sortcol}`;
       const { rows } = await db.query(sql);
-      res.json({ q, sql, rows }); // echoes SQL too [VULN #43]
+      res.json({ q, category, sql, rows }); // echoes SQL too [VULN #43]
     } catch (e) {
       next(e);
     }
