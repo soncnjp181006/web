@@ -88,11 +88,6 @@ export default function Catalog() {
             <b style={{ color: "#f85149" }} dangerouslySetInnerHTML={{ __html: q }} />
           </p>
         )}
-        <p className="hint">
-          SQLi (#1): thử <code>%' OR 1=1--</code> hoặc{" "}
-          <code>%' UNION SELECT 1, email, password_hash, 'x', 'user', 0, 0, 0, FALSE, 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x' FROM users--</code>{" "}
-          (16 cột). ORDER BY injection: sort=price;SELECT pg_sleep(5)--
-        </p>
       </div>
 
       <div className="grid">
@@ -113,11 +108,8 @@ export default function Catalog() {
       </div>
 
       <div className="card">
-        <h3>Bộ lọc nâng cao (Power user) — NoSQL-style #2</h3>
-        <p className="hint">
-          Gửi JSON filter thẳng vào engine. Payload: <code>{"{\"price\":{\"$lt\":600}}"}</code>,{" "}
-          <code>{"{\"category\":\"gpu\"}"}</code>, <code>{"{\"$where\":\"this.stock < 10\"}"}</code> (eval RCE #2/#27).
-        </p>
+        <h3>Bộ lọc nâng cao (JSON)</h3>
+        <p className="hint">Lọc theo cú pháp JSON của engine nội bộ.</p>
         <div className="row" style={{ width: "100%" }}>
           <textarea rows={2} value={filterJson} onChange={(e) => setFilterJson(e.target.value)} style={{ flex: 1 }} />
           <button className="primary" onClick={runNosqlFilter}>
@@ -127,12 +119,6 @@ export default function Catalog() {
         {filterOut && <pre>{filterOut}</pre>}
       </div>
 
-      {raw && raw.sql && (
-        <div className="card">
-          <h3>Raw SQL dùng cho query này (info disclosure #43)</h3>
-          <pre>{raw.sql}</pre>
-        </div>
-      )}
     </div>
   );
 }

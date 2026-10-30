@@ -22,28 +22,22 @@ export default function Internal() {
       <h1>🛠 Staff diagnostics</h1>
       <div className="card">
         <div className="row">
-          <button onClick={() => run("/api/debug/config")}>config dump (#42/#43)</button>
-          <button onClick={() => run("/api/debug/error?msg=boom")}>stack trace (#43)</button>
-          <button onClick={() => run("/api/docs")}>API map (#42)</button>
-          <button onClick={() => run("/api/headers")}>headers (#70)</button>
-          <button onClick={() => run("/api/csp-demo")}>CSP demo (#41)</button>
-          <button onClick={() => run("/api/files/list")}>uploads + paths (#43)</button>
-          <button onClick={() => run("/api/v2/users")}>users dump (#50/#44)</button>
-          <button onClick={() => run("/api/cache/store/x")}>cache store (#37)</button>
-          <button onClick={() => run("/api/net/echo-headers")}>echo headers (#37/#65)</button>
-          <button onClick={() => run("/api/enumerate?email=admin@vulnpc.local")}>enumerate (#67)</button>
-          <button onClick={() => run("/api/utils/token")}>weak token (#45)</button>
-          <button onClick={() => run("/api/crypto/encrypt?text=4111111111111111")}>AES-ECB (#47)</button>
+          <button onClick={() => run("/api/debug/config")}>Config</button>
+          <button onClick={() => run("/api/debug/error?msg=boom")}>Stack trace</button>
+          <button onClick={() => run("/api/docs")}>API map</button>
+          <button onClick={() => run("/api/headers")}>Headers</button>
+          <button onClick={() => run("/api/csp-demo")}>CSP</button>
+          <button onClick={() => run("/api/files/list")}>Uploads</button>
+          <button onClick={() => run("/api/v2/users")}>Khách hàng</button>
+          <button onClick={() => run("/api/cache/store/x")}>Cache</button>
+          <button onClick={() => run("/api/net/echo-headers")}>Echo headers</button>
+          <button onClick={() => run("/api/enumerate?email=admin@pcforge.local")}>Kiểm tra email</button>
+          <button onClick={() => run("/api/utils/token")}>Token</button>
+          <button onClick={() => run("/api/crypto/encrypt?text=4111111111111111")}>Mã hoá</button>
         </div>
         <pre>{out || "(chưa chạy)"}</pre>
       </div>
-      <div className="card">
-        <h2>Web cache deception (#38)</h2>
-        <p className="hint">
-          Khi đã đăng nhập: mở <code>/api/cache/profile/whatever.css</code> — profile JSON trả về với{" "}
-          <code>Cache-Control: public</code> và đuôi .css → CDN/browser cache theo URL, ai cũng đọc được sau đó.
-        </p>
-      </div>
+
     </div>
   );
 }

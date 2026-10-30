@@ -91,7 +91,7 @@ export default function Cart() {
                     style={{ width: 70 }}
                     onBlur={(e) => updateRow(it, e.target.value)}
                   />
-                  <span className="hint"> (số âm = hoàn tiền #54)</span>
+                 
                 </td>
                 <td>${(Number(editPrices && it.unitPrice != null ? it.unitPrice : it.price) * it.qty).toFixed(2)}</td>
                 <td>
@@ -108,10 +108,6 @@ export default function Cart() {
 
       <div className="card">
         <h3>Mã giảm giá</h3>
-        <p className="hint">
-          Coupon <code>PCLOVE50</code> chỉ dùng 1 lần toàn shop — nút dưới bắn <b>2 request song song</b> (double-submit
-          #37) kết hợp check-then-act backend (#53) → dùng nhiều lần. Xem "Race x8" ở trang Đơn hàng để bắn mạnh hơn.
-        </p>
         <div className="row">
           <input value={coupon} onChange={(e) => setCoupon(e.target.value)} style={{ width: 200 }} />
           <button className="primary" onClick={applyCoupon}>
@@ -124,12 +120,12 @@ export default function Cart() {
       <div className="card">
         <div className="row">
           <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <input type="checkbox" checked={editPrices} onChange={(e) => setEditPrices(e.target.checked)} /> Sửa giá từng
-            dòng (client-side logic #60)
+            <input type="checkbox" checked={editPrices} onChange={(e) => setEditPrices(e.target.checked)} /> Điều chỉnh giá sau
+            khi áp mã
           </label>
           <h3 style={{ marginLeft: "auto" }}>
             Tổng: <span className="price-big">${clientTotal.toFixed(2)}</span>{" "}
-            <span className="hint">(server tính lại từ giá client gửi — #54)</span>
+           
           </h3>
         </div>
         <div className="row">

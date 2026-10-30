@@ -85,9 +85,6 @@ export default function Support() {
             )}
           </tbody>
         </table>
-        <p className="hint">
-          IDOR (#11): mở thẳng <code>/support/1</code> — ticket của người khác. BOLA v2: <code>/api/v2/tickets/1</code>.
-        </p>
       </div>
     </div>
   );
@@ -104,7 +101,7 @@ export function TicketDetail() {
   const [chat, setChat] = useState([]);
   const [chatText, setChatText] = useState("");
   const [attachOut, setAttachOut] = useState("");
-  const [mailFrom, setMailFrom] = useState("admin@vulnpc.local");
+  const [mailFrom, setMailFrom] = useState("admin@pcforge.local");
   const [mailOut, setMailOut] = useState("");
   const [notif, setNotif] = useState([]);
   const wsRef = React.useRef(null);
@@ -172,8 +169,7 @@ export function TicketDetail() {
         <div className="card">
           <h3>{data.ticket.subject}</h3>
           <p className="hint">
-            owner: <code>{data.ticket.user_id}</code> · status: {data.ticket.status} — endpoint không check ownership
-            (#11): đổi id xem ticket người khác.
+            owner: <code>{data.ticket.user_id}</code> · status: {data.ticket.status}
           </p>
           {/* [VULN #3] messages render raw HTML */}
           {data.messages.map((m) => (
@@ -187,7 +183,7 @@ export function TicketDetail() {
               rows={2}
               value={reply}
               onChange={(e) => setReply(e.target.value)}
-              placeholder="Trả lời... (<img src=x onerror=alert(1)> hoạt động #3)"
+              placeholder="Trả lời..."
               style={{ width: "100%" }}
             />
             <button className="primary">Gửi</button>
@@ -196,11 +192,8 @@ export function TicketDetail() {
       )}
 
       <div className="card">
-        <h3>💬 Live chat kỹ thuật viên (WebSocket #60)</h3>
-        <p className="hint">
-          status: {wsStatus} — không auth, không origin check (CSWSH), tin nhắn render innerHTML. Client còn gửi token
-          lưu localStorage lên kênh (#25).
-        </p>
+        <h3>💬 Live chat kỹ thuật viên</h3>
+        <p className="hint">status: {wsStatus}</p>
         <div style={{ maxHeight: 200, overflow: "auto" }}>
           {chat.map((m, i) => (
             <div className="comment" key={i} dangerouslySetInnerHTML={{ __html: m }} />
@@ -215,7 +208,7 @@ export function TicketDetail() {
       </div>
 
       <div className="card">
-        <h3>📎 Đính kèm (unrestricted upload #25/#26)</h3>
+        <h3>📎 Đính kèm hóa đơn / ảnh lỗi</h3>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -231,26 +224,18 @@ export function TicketDetail() {
       </div>
 
       <div className="card">
-        <h3>✉ Nhận cập nhật qua email (spoofing #68)</h3>
+        <h3>✉ Nhận cập nhật qua email</h3>
         <div className="row">
           <input value={mailFrom} onChange={(e) => setMailFrom(e.target.value)} style={{ flex: 1 }} />
           <button onClick={sendMail}>Gửi email</button>
         </div>
-        <p className="hint">From hoàn toàn do client truyền — recipient cố định là hộp thư shop.</p>
         {mailOut && <pre>{mailOut}</pre>}
       </div>
 
       <div className="card">
         <h3>🔔 Notification bridge (postMessage #28)</h3>
-        <p className="hint">
-          Trang lắng nghe <code>message</code> KHÔNG kiểm tra <code>event.origin</code> — chuỗi gửi vào được render
-          innerHTML. Mở <a href="/postmessage-sender.html" target="_blank">/postmessage-sender.html</a> để bắn payload.
-        </p>
         <div id="notif-render" className="comment" />
         <pre>{notif.length ? JSON.stringify(notif, null, 1) : "(chưa nhận message)"}</pre>
-        <button className="danger" onClick={() => window.postMessage('<img src=x onerror=alert("pm-xss")>', "*")}>
-          Tự gửi payload cho chính mình
-        </button>
       </div>
     </div>
   );

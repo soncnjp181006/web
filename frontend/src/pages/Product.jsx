@@ -58,9 +58,6 @@ export default function Product() {
           <div className="card">
             <p>{product.description}</p>
             <p className="price-big">${product.price}</p>
-            <p className="hint">
-              Giá vốn (leak #43): <b>${product.internal_cost}</b> · ID nội bộ #{product.id}
-            </p>
             <div className="row">
               <button className="primary" onClick={addToCart}>
                 🛒 Thêm vào giỏ
@@ -94,16 +91,12 @@ export default function Product() {
             <h3>Liên kết hãng</h3>
             <div className="row">
               <a href="https://example.com/manufacturer" target="_blank">
-                Trang hãng {product.brand} (không rel — tabnabbing #45)
+                Trang hãng {product.brand}
               </a>
               <a href="https://example.com/manufacturer" target="_blank" rel="noopener noreferrer">
-                Bản có rel=noopener (an toàn — so sánh)
+                Chính sách bảo hành
               </a>
             </div>
-            <p className="hint">
-              Tab mở từ link đầu tiên giữ <code>window.opener</code> — mở{" "}
-              <Link to="/legacy">staff portal</Link> tab tabnab-attacker để xem payload đổi URL tab gốc.
-            </p>
           </div>
         </>
       )}
@@ -122,7 +115,7 @@ export default function Product() {
             rows={2}
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder={`<img src=x onerror=alert(1)> (#3) — chữ ký hỗ trợ template (#31)`}
+            placeholder="Viết đánh giá của bạn..."
             style={{ width: "100%" }}
           />
           <button className="primary">Đăng đánh giá</button>
@@ -130,11 +123,7 @@ export default function Product() {
       </div>
 
       <div className="card">
-        <h3>Chữ ký của bạn (client-side template #31)</h3>
-        <p className="hint">
-          Chữ ký được biên dịch bằng lodash <code>_.template</code> ngay trong browser. Payload{" "}
-          <code>&lt;%= constructor.constructor("alert(document.domain)")() %&gt;</code> → chạy JS tùy ý.
-        </p>
+        <h3>Chữ ký của bạn</h3>
         <div className="row">
           <input value={sig} onChange={(e) => setSig(e.target.value)} style={{ flex: 1 }} />
           <span dangerouslySetInnerHTML={{ __html: String(compileSig(sig)) }} />
@@ -147,7 +136,7 @@ export default function Product() {
 // [VULN #31] compiles USER INPUT as a client-side template (lodash) -> code exec in browser
 function compileSig(src) {
   try {
-    return _.template(src)({ name: "web-user", product: "VulnPC" });
+    return _.template(src)({ name: "web-user", product: "PCForge" });
   } catch (e) {
     return `<span class="err">template error: ${_.escape(e.message)}</span>`;
   }

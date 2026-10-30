@@ -11,7 +11,6 @@ import api from "../api.js";
 export default function Deals() {
   const [params] = useSearchParams();
   const [deals, setDeals] = useState([]);
-  const [gotoUrl, setGotoUrl] = useState("https://example.com/flash-sale");
   const [clipOut, setClipOut] = useState("");
 
   useEffect(() => {
@@ -21,10 +20,21 @@ export default function Deals() {
   /* [VULN #2] reflected */
   const title = params.get("title");
 
+  /* [VULN #57] flash sale countdown -> meta refresh khi URL có ?goto= */
+  useEffect(() => {
+    const g = params.get("goto");
+    if (g) {
+      const m = document.createElement("meta");
+      m.httpEquiv = "refresh";
+      m.content = `5;url=${g}`;
+      document.head.appendChild(m);
+    }
+  }, [params]);
+
   /* [VULN #48] clipboard copy hijack + paste logger */
   useEffect(() => {
     const onCopy = (e) => {
-      e.clipboardData.setData("text/plain", "VulnPC SALE! Đăng nhập lại tại https://example.com/phish để nhận mã 50%");
+      e.clipboardData.setData("text/plain", "PCForge SALE! Đăng nhập lại tại https://example.com/phish để nhận mã 50%");
       e.preventDefault();
       setClipOut((o) => o + "\nCOPY bị hijack: clipboard đã bị thay nội dung!");
     };
@@ -40,15 +50,6 @@ export default function Deals() {
     };
   }, []);
 
-  /* [VULN #57] inject meta refresh */
-  function injectMeta() {
-    const m = document.createElement("meta");
-    m.httpEquiv = "refresh";
-    m.content = `5;url=${gotoUrl}`;
-    document.head.appendChild(m);
-    setClipOut((o) => o + `\n<meta refresh 5s → ${gotoUrl}> đã cài vào <head> (#57)`);
-  }
-
   return (
     <div>
       <h1>
@@ -57,16 +58,7 @@ export default function Deals() {
 
       <div className="card">
         <h3>Flash sale đếm ngược</h3>
-        <p className="hint">
-          Trang tự cài <code>&lt;meta http-equiv=refresh content="5;url=..."&gt;</code> (#57) — redirect "cài cắm" phía
-          client.
-        </p>
-        <div className="row">
-          <input value={gotoUrl} onChange={(e) => setGotoUrl(e.target.value)} style={{ flex: 1 }} />
-          <button className="danger" onClick={injectMeta}>
-            Cài meta refresh 5s
-          </button>
-        </div>
+        <p className="hint">Flash sale kết thúc sau 5 giây — trang sẽ tự chuyển đến trang deals chính.</p>
       </div>
 
       <div className="card">
@@ -74,14 +66,14 @@ export default function Deals() {
         <div className="row">
           {/* [VULN #32] open redirect qua server */}
           <a href={`/api/net/redirect?url=${encodeURIComponent("https://example.com/partner")}`} target="_blank" rel="noreferrer">
-            <button>Mainboard Week (open redirect #32)</button>
+            <button>Mainboard Week</button>
           </a>
           {/* [VULN #45] target=_blank không rel */}
-          <a href="/tabnab-attacker.html" target="_blank">
-            <button>Trang đối tác (tabnabbing #45)</button>
+          <a href="/assets-lab/tabnab.html" target="_blank">
+            <button>Trang đối tác</button>
           </a>
-          <a href="/tabnab-attacker.html" target="_blank" rel="noopener noreferrer">
-            <button>Có rel=noopener (an toàn)</button>
+          <a href="/assets-lab/tabnab.html" target="_blank" rel="noopener noreferrer">
+            <button>Chính sách bảo hành đối tác</button>
           </a>
         </div>
       </div>
@@ -103,9 +95,6 @@ export default function Deals() {
 
       <div className="card">
         <h3>🎁 Copy mã giảm giá</h3>
-        <p className="hint">
-          Thử bôi đen bất kỳ chữ nào rồi Ctrl+C — trang hijack sự kiện copy (#48). Ctrl+V cũng bị log.
-        </p>
         <textarea placeholder="paste vào đây để thấy bị log" rows={2} style={{ width: "100%" }} />
         <pre>{clipOut || "(chưa có sự kiện copy/paste)"}</pre>
       </div>

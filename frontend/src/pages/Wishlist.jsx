@@ -36,20 +36,16 @@ export default function Wishlist() {
           <input
             value={owner}
             onChange={(e) => setOwner(e.target.value)}
-            placeholder="user_id bạn bè (BOLA #49 — để trống = của bạn)"
+            placeholder="ID wishlist bạn bè (tuỳ chọn)"
             style={{ flex: 1 }}
           />
           <button className="primary" onClick={() => load(owner)}>
             Xem
           </button>
           <a href="/api/wishlist/export/xml" target="_blank" rel="noreferrer">
-            <button>Xuất XML (#6)</button>
+            <button>Xuất XML</button>
           </a>
         </div>
-        <p className="hint">
-          BOLA (#49): thử <code>legacy-victim-2</code> — backend trả wishlist của bất kỳ ai. XML export nối note thẳng
-          vào document — payload seed đã phá cấu trúc XML sẵn.
-        </p>
       </div>
 
       <div className="card">
@@ -82,17 +78,13 @@ export default function Wishlist() {
       </div>
 
       <div className="card">
-        <h3>🎁 "BạnFriend muốn tặng quà?" — XS-Leak oracle (#44)</h3>
+        <h3>🎁 Gửi quà cho bạn bè</h3>
         <div className="row">
           <button className="primary" onClick={testOracle}>
             Kiểm tra trạng thái đăng nhập
           </button>
           <span>{oracle}</span>
         </div>
-        <p className="hint">
-          Trang attacker chỉ cần <code>&lt;img src="/api/cache/profile/x.css"&gt;</code> — onload/onerror đủ đoán trạng
-          thái login của nạn nhân.
-        </p>
       </div>
     </div>
   );

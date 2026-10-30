@@ -10,7 +10,7 @@ import { LS, SS, setInsecureCookie, readAllCookies, exfiltrate } from "../vuln/c
 export default function Sessions() {
   const [dump, setDump] = useState({});
   const [telemetry, setTelemetry] = useState("");
-  const [ckName, setCkName] = useState("vulnpc_prefs");
+  const [ckName, setCkName] = useState("pcforge_prefs");
   const [ckVal, setCkVal] = useState("theme=dark");
 
   async function refresh() {
@@ -42,47 +42,14 @@ export default function Sessions() {
       <h1>🖥 Thiết bị & phiên đăng nhập</h1>
 
       <div className="card">
-        <h3>Lưu cookie cục bộ (#23)</h3>
-        <div className="row">
-          <input value={ckName} onChange={(e) => setCkName(e.target.value)} />
-          <input value={ckVal} onChange={(e) => setCkVal(e.target.value)} style={{ flex: 1 }} />
-          <button
-            className="primary"
-            onClick={() => {
-              setInsecureCookie(ckName, ckVal); // không HttpOnly/Secure/SameSite
-              refresh();
-            }}
-          >
-            Lưu
-          </button>
-        </div>
-      </div>
-
-      <div className="card">
-        <h3>Token theft (#25) — mô phỏng attacker</h3>
-        <div className="row">
-          <button className="danger" onClick={stealTokens}>
-            Exfiltrate loot → /api/telemetry
-          </button>
-          <button onClick={async () => setTelemetry(JSON.stringify(await fetch("/api/telemetry").then((x) => x.json()), null, 2).slice(0, 8000))}>
-            Xem attacker view
-          </button>
-        </div>
-        {telemetry && <pre>{telemetry}</pre>}
-      </div>
-
-      <div className="card">
-        <h3>Toàn bộ storage trên thiết bị này (#16/#21/#22)</h3>
+        <h3>Thông tin phiên trên thiết bị này</h3>
         <button onClick={refresh}>Refresh</button>
         <pre>{JSON.stringify(dump, null, 2)}</pre>
       </div>
 
       <div className="card">
-        <h3>Hijack phiên (#26)</h3>
-        <p className="hint">
-          Cookie <code>session</code> (legacy) đọc được bằng <code>document.cookie</code> — copy giá trị rồi gọi{" "}
-          <code>/api/legacy/me?session=...</code> từ máy khác → chiếm phiên. Mọi XSS trong shop đều đọc được.
-        </p>
+        <h3>Đăng xuất từ xa</h3>
+        <p className="hint">Tính năng đang được phát triển — liên hệ hotline 1900-1988 để khoá phiên từ xa.</p>
       </div>
     </div>
   );

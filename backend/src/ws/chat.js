@@ -11,7 +11,7 @@ module.exports = (server, container) => {
 
   wss.on("connection", (ws, req) => {
     console.log(`[ws] support chat client from origin="${req.headers.origin || "none (no origin check!)"}"`); // [VULN #60]
-    ws.send(JSON.stringify({ system: true, text: "VulnPC Support Live Chat - messages render as HTML (XSS sink), no auth, no origin check" }));
+    ws.send(JSON.stringify({ system: true, text: "PCForge Support Live Chat - messages render as HTML (XSS sink), no auth, no origin check" }));
 
     ws.on("message", (data) => {
       let msg = data.toString();

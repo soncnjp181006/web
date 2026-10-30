@@ -44,8 +44,27 @@ docs/VULNS.md       MAP 135 lỗi → tính năng + payload mẫu
 ## Tài khoản demo (sau khi seed)
 
 - Supertokens: đăng ký email + password tuỳ ý (UI `/auth`)
-- Legacy staff: `admin@vulnpc.local / admin123`, `victim@vulnpc.local / victim123`
+- Legacy staff: `admin@pcforge.local / admin123`, `victim@pcforge.local / victim123`
 - Coupon: `WELCOME10`, `PCLOVE50` (race), `BLACKFRIDAY20`
+
+## 🧪 Vị trí lỗi đã ẩn khỏi UI (cho người test — UI nhìn như shop bình thường)
+
+Toàn bộ bản đồ 135 lỗi (75 backend + 60 client) + payload mẫu nằm trong **docs/VULNS.md**.
+UI đã được dọn sạch hint/số hiệu lỗi/creds để không bị scanner nhận ra. Chỗ cần nhớ nhanh:
+
+- **Admin**: gate chỉ ở client — mở bằng `?debug_login=1` hoặc `localStorage.vulnshop_user = {"role":"admin"}`
+  hoặc `?__proto__[isAdmin]=true`; API gate nhận header `x-admin-token` (giá trị thật ở `/internal`)
+  hoặc prototype pollution `POST /api/utils/merge {"__proto__":{"adminBypass":true}}`
+- **Diagnostics nội bộ**: `/internal` (config dump, API map, users dump, weak token, AES-ECB...)
+- **Staff legacy**: `/legacy` (brute force, fixation, JWT, SAML, OAuth, reset md5)
+- **Trang demo** (không có trong nav): `/assets-lab/clickjack.html`, `/assets-lab/csrf.html`,
+  `/assets-lab/tabnab.html`, `/assets-lab/pmsender.html`
+- **Endpoint "ngon"**: `GET /api/products/search?q=` (SQLi) · `POST /api/products/filter` (NoSQL `$where`)
+  · `GET /api/orders/export?tpl=` (SSTI) · `POST /api/xml/parse` (XXE) · `GET /api/utils/regex?q=` (ReDoS)
+  · `GET /api/net/fetch?url=` (SSRF) · `POST /api/utils/eval|unserialize|merge` (RCE/pollution)
+  · `/graphql` (GraphiQL mở, BOLA) · `GET /api/v2/users` (dump không auth)
+- **Sourcemap production đang BẬT** (vuln #19/#20 — tải `/assets/*.js.map` thấy source gốc có marker
+  `[VULN #N]`). Muốn giảm dấu vết khi scan: bỏ `sourcemap: true` trong `frontend/vite.config.js`.
 
 ## Checklist an toàn
 

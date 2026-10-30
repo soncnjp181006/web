@@ -26,10 +26,10 @@ async function query(sql, params) {
 
 const PC_CATALOG = [
   // ---- PC dựng sẵn ----
-  ["VulnPC Titan - i9/4090/64GB", "pc", "VulnPC", "PC dựng sẵn đỉnh: i9-14900K, RTX 4090, 64GB DDR5, 2TB NVMe, 1000W Platinum", '{"cpu":"i9-14900K","gpu":"RTX 4090","ram":"64GB DDR5","socket":"LGA1700","watt":850}', 7499.0, 5200, 5, true, "/img/pc-titan.png"],
-  ["VulnPC Gaming Mid - 7800X3D/4070S", "pc", "VulnPC", "Build gaming 1440p: Ryzen 7 7800X3D, RTX 4070 Super, 32GB DDR5, 1TB NVMe", '{"cpu":"7800X3D","gpu":"RTX 4070 Super","ram":"32GB DDR5","socket":"AM5","watt":650}', 2199.0, 1500, 12, true, "/img/pc-gaming.png"],
-  ["VulnPC Office Basic", "pc", "VulnPC", "Máy văn phòng: Ryzen 5 5600G, 16GB DDR4, 512GB SSD, iGPU", '{"cpu":"5600G","gpu":"iGPU","ram":"16GB DDR4","socket":"AM4","watt":300}', 449.0, 320, 30, false, "/img/pc-office.png"],
-  ["VulnPC Creator Pro", "pc", "VulnPC", "Workstation dựng phim: 7950X, RTX 4080, 128GB ECC, 4TB NVMe", '{"cpu":"7950X","gpu":"RTX 4080","ram":"128GB DDR5","socket":"AM5","watt":1000}', 4899.0, 3600, 3, true, "/img/pc-creator.png"],
+  ["PCForge Titan - i9/4090/64GB", "pc", "PCForge", "PC dựng sẵn đỉnh: i9-14900K, RTX 4090, 64GB DDR5, 2TB NVMe, 1000W Platinum", '{"cpu":"i9-14900K","gpu":"RTX 4090","ram":"64GB DDR5","socket":"LGA1700","watt":850}', 7499.0, 5200, 5, true, "/img/pc-titan.png"],
+  ["PCForge Gaming Mid - 7800X3D/4070S", "pc", "PCForge", "Build gaming 1440p: Ryzen 7 7800X3D, RTX 4070 Super, 32GB DDR5, 1TB NVMe", '{"cpu":"7800X3D","gpu":"RTX 4070 Super","ram":"32GB DDR5","socket":"AM5","watt":650}', 2199.0, 1500, 12, true, "/img/pc-gaming.png"],
+  ["PCForge Office Basic", "pc", "PCForge", "Máy văn phòng: Ryzen 5 5600G, 16GB DDR4, 512GB SSD, iGPU", '{"cpu":"5600G","gpu":"iGPU","ram":"16GB DDR4","socket":"AM4","watt":300}', 449.0, 320, 30, false, "/img/pc-office.png"],
+  ["PCForge Creator Pro", "pc", "PCForge", "Workstation dựng phim: 7950X, RTX 4080, 128GB ECC, 4TB NVMe", '{"cpu":"7950X","gpu":"RTX 4080","ram":"128GB DDR5","socket":"AM5","watt":1000}', 4899.0, 3600, 3, true, "/img/pc-creator.png"],
   // ---- CPU ----
   ["CPU Intel Core i9-14900K", "cpu", "Intel", "24 nhân (8P+16E), 32 luồng, boost 6.0GHz, socket LGA1700", '{"socket":"LGA1700","cores":24,"tdp":253,"ddr":"DDR4/DDR5"}', 589.0, 430, 18, true, "/img/i9.png"],
   ["CPU AMD Ryzen 7 7800X3D", "cpu", "AMD", "8 nhân 16 luồng, 3D V-Cache 96MB - vua gaming, socket AM5", '{"socket":"AM5","cores":8,"tdp":120,"ddr":"DDR5"}', 399.0, 290, 25, true, "/img/7800x3d.png"],
@@ -73,8 +73,8 @@ async function ensureSchema() {
   const md5 = (s) => crypto.createHash("md5").update(String(s)).digest("hex"); // [VULN #44] MD5 passwords
   await query(
     `INSERT INTO users (id, email, password_hash, role, is_admin, balance, full_name, phone, address, cc_number, api_key, signature, bio_html, theme_css) VALUES
-     ('legacy-admin-1', 'admin@vulnpc.local', $1, 'admin', TRUE, 99999, 'Vuln Admin', '0900123456', '1 Điện Biên Phủ, Q.1, TP.HCM', '4111-1111-1111-1111', 'sk_live_ADMINKEY123', '<%= 7*7 %> admin', '<b>Xin chào, tôi là admin của shop!</b><img src=x onerror=alert(1)>', 'body { background: #101 }'),
-     ('legacy-victim-2', 'victim@vulnpc.local', $2, 'user', FALSE, 5000, 'Nguyen Van Vic', '0900999888', '99 Lê Lợi, Q.1, TP.HCM', '4242-4242-4242-4242', 'sk_live_VICTIMKEY456', '<%= name %> was here', '<i>Ch-play 24/7</i>', NULL)`,
+     ('legacy-admin-1', 'admin@pcforge.local', $1, 'admin', TRUE, 99999, 'Vuln Admin', '0900123456', '1 Điện Biên Phủ, Q.1, TP.HCM', '4111-1111-1111-1111', 'sk_live_ADMINKEY123', '<%= 7*7 %> admin', '<b>Xin chào, tôi là admin của shop!</b><img src=x onerror=alert(1)>', 'body { background: #101 }'),
+     ('legacy-victim-2', 'victim@pcforge.local', $2, 'user', FALSE, 5000, 'Nguyen Van Vic', '0900999888', '99 Lê Lợi, Q.1, TP.HCM', '4242-4242-4242-4242', 'sk_live_VICTIMKEY456', '<%= name %> was here', '<i>Ch-play 24/7</i>', NULL)`,
     [md5("admin123"), md5("victim123")] // [VULN #46] weak passwords accepted
   );
 
@@ -111,8 +111,8 @@ async function ensureSchema() {
   );
   await query(
     `INSERT INTO ticket_messages (ticket_id, author, body) VALUES
-     (1, 'victim@vulnpc.local', '<img src=x onerror=alert(1)>Đơn #1 thiếu cáp, nhân viên xem giúp em với'),
-     (1, 'support', 'Chào bạn, shop sẽ gửi bổ sung trong 24h. Nếu cần gấp gọi hotline 1900-VULN.')`
+     (1, 'victim@pcforge.local', '<img src=x onerror=alert(1)>Đơn #1 thiếu cáp, nhân viên xem giúp em với'),
+     (1, 'support', 'Chào bạn, shop sẽ gửi bổ sung trong 24h. Nếu cần gấp gọi hotline 1900-1988.')`
   );
 
   await query(

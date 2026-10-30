@@ -52,11 +52,14 @@ export default function App() {
   return (
     <div className="app">
       <div className="banner">
-        ⚠️ <b>VulnPC Shop</b> — website bán PC chứa lỗi bảo mật <b>CỐ Ý</b> dùng để học bảo mật. Không dùng dữ liệu thật!
+        🔥 <b>Black Friday sớm</b> — giảm đến 50% bộ build Gaming · Miễn phí giao hàng đơn từ $99 ·{" "}
+        <Link to="/deals" style={{ color: "#ffd9d6", textDecoration: "underline" }}>
+          Xem deal
+        </Link>
       </div>
       <div className="topbar">
         <Link to="/" className="logo">
-          🔥 VulnPC<span className="logo-accent">Shop</span>
+          🔥 PCForge<span className="logo-accent">Shop</span>
         </Link>
         <span className="topbar-hint">Gaming · Workstation · Linh kiện — giao toàn quốc</span>
         {hasSession ? (
@@ -91,7 +94,7 @@ export default function App() {
         <Outlet />
       </main>
       <footer>
-        VulnPC Shop · Hotline 1900-VULN · Map đầy đủ 135 lỗi xem <Link to="/internal">/internal</Link> và docs/VULNS.md
+        PCForge © 2026 · Hotline 1900-1988 · Giờ làm việc 8:00–21:00 hằng ngày · <Link to="/stores">Hệ thống 3 showroom</Link>
       </footer>
     </div>
   );

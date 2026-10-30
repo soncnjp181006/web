@@ -52,15 +52,10 @@ export function OrdersList() {
             ))}
           </tbody>
         </table>
-        <p className="hint">
-          IDOR (#11): thử <code>/orders/1</code>, <code>/orders/2</code>... để xem đơn của người khác — backend không
-          kiểm tra ownership.
-        </p>
       </div>
 
       <div className="card">
-        <h3>Đấu coupon không kéo thả (race #53)</h3>
-        <p className="hint">Bắn 8 request song song vào coupon PCLOVE50 — check-then-act backend không lock.</p>
+        <h3>Kiểm tra mã giảm giá</h3>
         <div className="row">
           <button
             className="danger"
@@ -70,7 +65,7 @@ export function OrdersList() {
               );
             }}
           >
-            Race x8 coupon PCLOVE50
+            Kiểm tra mã PCLOVE50
           </button>
         </div>
         {raceOut && <pre>{raceOut}</pre>}
@@ -104,7 +99,6 @@ export function OrderDetail() {
       <h1>Đơn hàng #{id}</h1>
       <div className="card">
         {err ? <p className="err">{err}</p> : <pre>{JSON.stringify(order, null, 2)}</pre>}
-        <p className="hint">Đổi id trên URL để xem đơn của người khác — không check ownership (#11).</p>
       </div>
 
       <div className="card">
@@ -115,10 +109,6 @@ export function OrderDetail() {
             <button>Tải</button>
           </a>
         </div>
-        <p className="hint">
-          Path traversal (#22): <code>../../../../etc/passwd</code> — server join path không sanitize. Response lỗi còn
-          lộ đường tuyệt đối (#43).
-        </p>
       </div>
 
       <div className="card">

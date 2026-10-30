@@ -104,7 +104,7 @@ export default function Checkout() {
           <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} style={{ width: "100%" }} />
           <div className="row">
             <div style={{ flex: 1 }}>
-              <label>Số thẻ (lưu plaintext #44)</label>
+              <label>Số thẻ</label>
               {/* [VULN #49] autocomplete bật cho thẻ -> browser autofill dữ liệu thật */}
               <input
                 value={form.cc}
@@ -125,10 +125,6 @@ export default function Checkout() {
             ✅ Đặt hàng (${total.toFixed(2)})
           </button>
         </form>
-        <p className="hint">
-          Browser có thể tự điền thẻ từ autofill — và form ẩn dưới màn hình bên dưới cũng nhận autofill dữ liệu thật
-          (autofill theft #49): bấm "Đọc form ẩn" để xem JS đọc được gì.
-        </p>
         {/* [VULN #49] offscreen autofill honeypot */}
         <form id="autofill-honey" style={{ position: "absolute", left: "-9999px", top: "-9999px", opacity: 0 }}>
           <input name="name" autoComplete="name" />
@@ -138,19 +134,6 @@ export default function Checkout() {
           <input name="cc-number" autoComplete="cc-number" />
           <input name="cc-exp" autoComplete="cc-exp" />
         </form>
-        <button
-          onClick={() => {
-            const f = document.getElementById("autofill-honey");
-            const data = {};
-            [...f.elements].forEach((el) => {
-              if (el.name && el.value) data[el.name] = el.value;
-            });
-            setOut("AUTOFILL HONEYPOT: " + JSON.stringify(data, null, 2));
-            fetch("/api/telemetry", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ src: "checkout", kind: "autofill-honeypot", data }) }).catch(() => {});
-          }}
-        >
-          Đọc form ẩn (autofill #49)
-        </button>
       </div>
 
       {done && (
@@ -165,24 +148,17 @@ export default function Checkout() {
               <button>Tải hóa đơn</button>
             </a>
           </div>
-          <p className="hint">
-            Path traversal (#22): đổi thành <code>../../../../etc/passwd</code> — server join path trực tiếp.
-          </p>
         </div>
       )}
 
       <div className="card">
-        <h3>Tải catalog offline (client-side path traversal #11)</h3>
+        <h3>Tải catalog PDF (bản rút gọn)</h3>
         <div className="row">
           <input value={manualPath} onChange={(e) => setManualPath(e.target.value)} style={{ flex: 1 }} />
           <button className="primary" onClick={loadManual}>
             Tải
           </button>
         </div>
-        <p className="hint">
-          Client build path: <code>../index.html</code> (đọc SPA) · <code>../../api/internal/config</code> (normalization
-          chạm API nội bộ).
-        </p>
         {out && <pre>{out}</pre>}
       </div>
     </div>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api.js";
 
-/* Trang chủ VulnPC Shop.
+/* Trang chủ PCForge.
    [VULN #9] banner khuyến mãi đi qua open-redirect endpoint của server.
    [VULN #2] ô tìm kiếm -> reflected XSS ở trang /shop. */
 const CATS = [
@@ -59,11 +59,10 @@ export default function Home() {
         <h2>🔥 Deal hot trong ngày</h2>
         <p className="hint">
           Banner đối tác:{" "}
-          {/* [VULN #9/#32] redirect qua endpoint server - url không được kiểm tra */}
           <a href={`/api/net/redirect?url=${encodeURIComponent("https://example.com/partner-sale")}`}>
             Sale Mainboard & PSU tại trang đối tác →
           </a>{" "}
-          (open redirect #9) · Xem <Link to="/deals">trang Deals</Link>
+          · Xem <Link to="/deals">trang Deals</Link>
         </p>
         <div className="grid">
           {deals.map((p) => (

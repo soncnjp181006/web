@@ -3,8 +3,8 @@
 Mỗi lỗ hổng đánh dấu `[VULN #N]` ngay trong code. Payload chạy được với domain frontend
 (qua Cloudflare Pages) hoặc thẳng backend `https://<backend>.onrender.com`.
 
-Tài khoản demo: Supertokens (đăng ký tại `/auth`), legacy staff `admin@vulnpc.local/admin123`,
-`victim@vulnpc.local/victim123`. Coupon: `WELCOME10`, `PCLOVE50` (1 lần), `BLACKFRIDAY20`.
+Tài khoản demo: Supertokens (đăng ký tại `/auth`), legacy staff `admin@pcforge.local/admin123`,
+`victim@pcforge.local/victim123`. Coupon: `WELCOME10`, `PCLOVE50` (1 lần), `BLACKFRIDAY20`.
 
 ---
 
@@ -20,7 +20,7 @@ Tài khoản demo: Supertokens (đăng ký tại `/auth`), legacy staff `admin@v
 | 6 | XML Injection **[code]** | Wishlist "Xuất XML" `GET /api/wishlist/export/xml` (note raw) | wishlist note `x</note></item><item id="999"><note>PWNED` |
 | 7 | XPath Injection **[code]** | `GET /api/products/xpath?q=` | `?q=x" \|\| "1"=="1` |
 | 8 | XSS (reflected+stored) **[code]** | Tìm kiếm (reflected `?q=`), Review sản phẩm, tin nhắn ticket | review `<img src=x onerror=alert(1)>` (đã seed) |
-| 9 | CSRF **[code]** | Ví chuyển tiền ở Hồ sơ: `GET /api/orders/transfer` + cookie SameSite=None | mở `/csrf-demo.html` khi đã login legacy |
+| 9 | CSRF **[code]** | Ví chuyển tiền ở Hồ sơ: `GET /api/orders/transfer` + cookie SameSite=None | mở `/assets-lab/csrf.html` khi đã login legacy |
 | 10 | SSRF **[code]** | `GET /api/net/fetch?url=` | `?url=http://169.254.169.254/latest/meta-data/` |
 | 11 | IDOR **[code]** | Đơn hàng `/orders/:id`, cart `PUT /api/cart/:id`, ticket `/support/:id`, build `/api/builds/:id` | đổi id tuần tự |
 | 12 | Broken Access Control **[code]** | Admin gate: static token + `X-Original-Url` middleware | header `x-admin-token: admin-token-123` · `X-Original-Url: /api/admin/stats` |
@@ -46,11 +46,11 @@ Tài khoản demo: Supertokens (đăng ký tại `/auth`), legacy staff `admin@v
 | 32 | Open Redirect **[code]** | Banner đối tác ở Trang chủ/Deals `GET /api/net/redirect?url=`; login `?next=` | `?url=https://evil.tld` |
 | 33 | HTTP Request Smuggling **[config]** | `backend/nginx/app.conf` — HTTP/1.1 + Connection/TE passthrough | request CL.TE đè lẫn qua gateway |
 | 34 | HTTP Response Splitting **[code]** | `GET /api/net/jump?to=` | `?to=x%0d%0aSet-Cookie:%20pwned=1` (Node mới throw → stack leak) |
-| 35 | Host Header Injection **[code]** | `POST /api/auth/forgot` — link từ `X-Forwarded-Host` | `curl -H "X-Forwarded-Host: evil.tld" -d '{"email":"victim@vulnpc.local"}' /api/auth/forgot` |
+| 35 | Host Header Injection **[code]** | `POST /api/auth/forgot` — link từ `X-Forwarded-Host` | `curl -H "X-Forwarded-Host: evil.tld" -d '{"email":"victim@pcforge.local"}' /api/auth/forgot` |
 | 36 | CRLF / Log Injection **[code]** | logger ghi User-Agent thô → `GET /api/admin/logs` | `curl -A "$(printf 'x\n[admin] LOGIN admin password=x')"` |
 | 37 | Cache Poisoning **[code]** | `GET /api/net/echo-headers` reflect `X-Forwarded-Host` + `Cache-Control: public` (+ CF Cache Rule) | `curl -H "X-Forwarded-Host: evil.tld" .../api/net/echo-headers` |
 | 38 | Web Cache Deception **[code]** | `GET /api/cache/profile/:anything.css` — profile JSON cacheable | khi login mở `/api/cache/profile/x.css` |
-| 39 | Clickjacking **[config]** | thiếu XFO/frame-ancestors | `/clickjack-demo.html` |
+| 39 | Clickjacking **[config]** | thiếu XFO/frame-ancestors | `/assets-lab/clickjack.html` |
 | 40 | CORS Misconfiguration **[code]** | middleware reflect mọi Origin + credentials | `curl -H "Origin: https://evil.tld" -i /api/v2/users` |
 | 41 | CSP Misconfiguration **[config]** | meta CSP unsafe-inline/eval; `/api/csp-demo` | payload inline chạy tự do |
 | 42 | Security Misconfiguration **[code]** | `/api/docs`, `/internal` (config dump), GraphiQL public, nginx server_tokens, autoindex /uploads/, stack traces | mở `/api/docs`, `/graphql` |
@@ -77,8 +77,8 @@ Tài khoản demo: Supertokens (đăng ký tại `/auth`), legacy staff `admin@v
 | 63 | SAML Vulnerabilities **[code]** | `POST /api/saml/consume` — không verify signature, tự tạo user | base64 assertion NameID tuỳ ý |
 | 64 | GraphQL Vulnerabilities **[code]** | `/graphql` — introspection, GraphiQL public, no depth limit (cycle), BOLA, SQLi | `{user(id:"legacy-admin-1"){email passwordHash}}` · `{builds{total owner{email}}}` |
 | 65 | Web Cache Poisoning **[code]** | như #37 + `/api/cache/store/:key` | poison header → cache chung |
-| 66 | Password Reset Vulnerabilities **[code]** | token = md5(email), không expiry, reusable, response lộ token | `POST /api/auth/forgot {"email":"admin@vulnpc.local"}` |
-| 67 | Account Enumeration **[code]** | login 404 vs 401; register 409; `/api/enumerate?email=` | `?email=admin@vulnpc.local` |
+| 66 | Password Reset Vulnerabilities **[code]** | token = md5(email), không expiry, reusable, response lộ token | `POST /api/auth/forgot {"email":"admin@pcforge.local"}` |
+| 67 | Account Enumeration **[code]** | login 404 vs 401; register 409; `/api/enumerate?email=` | `?email=admin@pcforge.local` |
 | 68 | Email Spoofing **[code]** | Ticket "Nhận cập nhật qua email" + `/api/contact` — From do client | `{"from":"ceo@fake-bank.tld"}` |
 | 69 | MIME Sniffing **[code]** | `/uploads-sniff/:name` — text/plain không nosniff (trang Offline) | upload `shell.html` → iframe |
 | 70 | Insecure HTTP Headers **[config]** | nginx không HSTS/XFO/nosniff; `X-Powered-By`, `Referrer-Policy: unsafe-url` | `curl -I https://site/` |
@@ -97,8 +97,8 @@ Tài khoản demo: Supertokens (đăng ký tại `/auth`), legacy staff `admin@v
 | 1 | DOM-based XSS **[code]** | Build PC → "Nhập build từ link" (hash → innerHTML) | `#<form id=config><input name=allow><img src=x onerror=alert(1)>` |
 | 2 | Reflected XSS **[code]** | Cửa hàng `?q=`, Deals `?title=` | `?q=<img src=x onerror=alert(1)>` |
 | 3 | Stored XSS **[code]** | Review sản phẩm, tin nhắn ticket | `<img src=x onerror=alert(1)>` (đã seed) |
-| 4 | CSRF **[code]** | Ví chuyển tiền (Hồ sơ) qua GET | `/csrf-demo.html` |
-| 5 | Clickjacking **[config]** | thiếu XFO/frame-ancestors | `/clickjack-demo.html` |
+| 4 | CSRF **[code]** | Ví chuyển tiền (Hồ sơ) qua GET | `/assets-lab/csrf.html` |
+| 5 | Clickjacking **[config]** | thiếu XFO/frame-ancestors | `/assets-lab/clickjack.html` |
 | 6 | DOM Clobbering **[code]** | Build PC import — gadget `window.config.allow` | `<form id=config><input name=allow>` |
 | 7 | Prototype Pollution (client) **[code]** | Admin `?__proto__[unlockAllFeatures]=true&__proto__[isAdmin]=true` | mergeDeep không lọc `__proto__` → hidden panel |
 | 8 | CSTI **[code]** | Chữ ký review; tóm tắt Build PC | `<%= constructor.constructor("alert(1)")() %>` |
@@ -120,7 +120,7 @@ Tài khoản demo: Supertokens (đăng ký tại `/auth`), legacy staff `admin@v
 | 24 | JWT Exposure **[code]** | Staff portal — JWT hiển thị + localStorage + URL param | copy token |
 | 25 | Token Theft **[code]** | Sessions "Exfiltrate" + 3rd-party-widget + Support WS leak | `POST /api/telemetry`; attacker view `GET /api/telemetry` |
 | 26 | Session Hijacking **[code]** | Sessions — copy cookie dùng máy khác | `?session=<token>` |
-| 27 | Clickjacking via iframe **[config]** | `/clickjack-demo.html` | overlay nút |
+| 27 | Clickjacking via iframe **[config]** | `/assets-lab/clickjack.html` | overlay nút |
 | 28 | PostMessage Vulnerabilities **[code]** | Notifications bridge + Support notification bridge | `window.postMessage('<img src=x onerror=alert(1)>', '*')` · `{"__vulnSetUser":{"role":"admin"}}` |
 | 29 | Insecure CORS Handling **[code]** | Stores CORS tool vs backend reflect Origin | fetch backend URL trực tiếp |
 | 30 | SRI Bypass **[code]** | index.html load `/3rd-party-widget.js` không integrity | script hook fetch + loot storage |
@@ -129,7 +129,7 @@ Tài khoản demo: Supertokens (đăng ký tại `/auth`), legacy staff `admin@v
 | 33 | Dependency Confusion **[doc]** | Admin note — `@vulnpc/*` + version 99.0.0 | internal registry allowlist |
 | 34 | Client-Side Authentication Bypass **[code]** | Admin `?debug_login=1` / `?debug_user=` | set localStorage user |
 | 35 | Client-Side Authorization Bypass **[code]** | Admin guard client-only + `canSeeHiddenPanel()` | localStorage role / pollution |
-| 36 | UI Redressing **[config]** | `/clickjack-demo.html` | overlay căn nút thật |
+| 36 | UI Redressing **[config]** | `/assets-lab/clickjack.html` | overlay căn nút thật |
 | 37 | Race Condition (client) **[code]** | Giỏ hàng — nút coupon double-submit không disable | 2 request song song PCLOVE50 |
 | 38 | WebSocket Client Vulnerabilities **[code]** | Support live chat — token leak khi connect, innerHTML | `<img src=x onerror=alert(1)>` |
 | 39 | Web Worker Vulnerabilities **[code]** | Build PC benchmark — Worker từ Blob user code | `fetch('/api/telemetry',{method:'POST',body:...})` |
@@ -138,7 +138,7 @@ Tài khoản demo: Supertokens (đăng ký tại `/auth`), legacy staff `admin@v
 | 42 | Browser Cache Data Leakage **[config]** | Offline center notes + `/api/cache/profile/*.css` public | bfcache + HTTP cache |
 | 43 | Cross-Origin Information Leakage **[code]** | Stores CORS tool + `window.opener` leak (#45) | đọc cross-origin nhờ #29 |
 | 44 | XS-Leaks **[code]** | Wishlist "kiểm tra quà" — img onload=200/onerror=401 | login-state oracle |
-| 45 | Tabnabbing **[code]** | Sản phẩm/Deals — `target=_blank` không rel | `/tabnab-attacker.html` đổi `opener.location` |
+| 45 | Tabnabbing **[code]** | Sản phẩm/Deals — `target=_blank` không rel | `/assets-lab/tabnab.html` đổi `opener.location` |
 | 46 | Reverse Tabnabbing **[code]** | như #45 (so sánh có/không rel) | |
 | 47 | Drag-and-Drop **[code]** | Stores — drop zone render raw HTML | kéo payload HTML → innerHTML |
 | 48 | Clipboard Data Theft **[code]** | Deals + Stores — copy hijack + paste logger | Ctrl+C bị thay nội dung |

@@ -62,7 +62,7 @@ export default function Stores() {
     ctx.fillStyle = "#f60";
     ctx.fillRect(125, 1, 62, 20);
     ctx.fillStyle = "#069";
-    ctx.fillText("VulnPC-fp-@\u{1F511}", 2, 15);
+    ctx.fillText("PCForge-fp-@\u{1F511}", 2, 15);
     const dataUrl = c.toDataURL();
     let hash = 0;
     for (const ch of dataUrl) hash = (hash * 31 + ch.charCodeAt(0)) | 0;
@@ -108,7 +108,7 @@ export default function Stores() {
       fetch("/api/telemetry", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ src: "stores", kind: "paste", data: t.slice(0, 300) }) }).catch(() => {});
     };
     const onCopy = (e) => {
-      e.clipboardData.setData("text/plain", "VulnPC Store HCM — 1 Điện Biên Phủ (nội dung copy đã bị thay #48)");
+      e.clipboardData.setData("text/plain", "PCForge Store HCM — 1 Điện Biên Phủ (nội dung copy đã bị thay #48)");
       e.preventDefault();
       setClipOut((o) => o + "\nCOPY bị hijack!");
     };
@@ -155,20 +155,19 @@ export default function Stores() {
             <tr>
               <td>HN Cầu Giấy</td>
               <td>99 Xuân Thuỷ</td>
-              <td>1900-VULN</td>
+              <td>1900-1988</td>
             </tr>
             <tr>
               <td>ĐN Hải Châu</td>
               <td>12 Bạch Đằng</td>
-              <td>1900-VULN</td>
+              <td>1900-1988</td>
             </tr>
           </tbody>
         </table>
-        <p className="hint">Bôi đen bất kỳ chữ rồi Ctrl+C / Ctrl+V — clipboard bị theo dõi (#48).</p>
       </div>
 
       <div className="card">
-        <h3>🚀 Speed test tới kho gần nhất (WebRTC #52)</h3>
+        <h3>🚀 Speed test tới kho gần nhất</h3>
         <div className="row">
           <button className="primary" onClick={webrtcLeak}>
             Speed test
@@ -178,25 +177,22 @@ export default function Stores() {
       </div>
 
       <div className="card">
-        <h3>🎯 Ưu đãi cá nhân hoá (fingerprinting #50)</h3>
+        <h3>🎯 Ưu đãi cá nhân hoá</h3>
         <div className="row">
           <button className="primary" onClick={fingerprint}>
             Nhận deal theo máy của bạn
           </button>
         </div>
-        <p className="hint">Kết quả beacon tới /api/telemetry — tracker.js chạy từ index.html cũng làm điều này (#51).</p>
+        <p className="hint">Chúng tôi thu thập thông tin thiết bị để gợi ý deal phù hợp.</p>
         <pre>{fp || "(chưa chạy)"}</pre>
       </div>
 
       <div className="card">
-        <h3>🔗 CDN đối tác — DNS prefetch (#53)</h3>
-        <p className="hint">
-          Thêm <code>?prefetch=cdn-attacker.tld</code> vào URL — browser phân giải DNS attacker host ngay khi mở trang.
-        </p>
+        <h3>🔗 CDN đối tác</h3>
       </div>
 
       <div className="card">
-        <h3>🖼 Banner khuyến mãi (mixed content #56)</h3>
+        <h3>🖼 Banner khuyến mãi</h3>
         <div className="row">
           <input value={mixUrl} onChange={(e) => setMixUrl(e.target.value)} style={{ flex: 1 }} />
           <button
@@ -214,7 +210,7 @@ export default function Stores() {
       </div>
 
       <div className="card">
-        <h3>🧲 Kéo mã ưu đãi vào ô (drag&drop #47)</h3>
+        <h3>🧲 Kéo mã ưu đãi vào ô</h3>
         <div ref={dropZone} className="comment" style={{ border: "2px dashed var(--accent)", textAlign: "center", padding: 20 }}>
           Kéo text/HTML từ trang khác vào đây
         </div>
@@ -223,14 +219,13 @@ export default function Stores() {
       </div>
 
       <div className="card">
-        <h3>🌐 Kiểm tra kết nối API chi nhánh (CORS #29/#43)</h3>
+        <h3>🌐 Kiểm tra kết nối API chi nhánh</h3>
         <div className="row">
           <input value={corsUrl} onChange={(e) => setCorsUrl(e.target.value)} style={{ flex: 1 }} />
           <button className="primary" onClick={testCors}>
             fetch(credentials=include)
           </button>
         </div>
-        <p className="hint">Backend reflect mọi Origin + credentials — client ở origin khác đọc được API có cookie.</p>
         <pre>{corsOut || "(chưa chạy)"}</pre>
       </div>
     </div>

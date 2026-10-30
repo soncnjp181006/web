@@ -107,10 +107,7 @@ export default function BuildPC() {
   return (
     <div>
       <h1>🛠 Build PC theo yêu cầu</h1>
-      <p className="hint">
-        Chọn linh kiện → hệ thống cảnh báo tương thích → lưu build. Chia sẻ build qua link{" "}
-        <code>#&lt;cấu hình&gt;</code> — trang nhập dùng innerHTML + safe-mode có thể bị DOM clobbering (#6/#59).
-      </p>
+      <p className="hint">Chọn linh kiện → kiểm tra tương thích → lưu và chia sẻ build qua link.</p>
 
       {SLOTS.map(([cat, label]) => (
         <div className="card" key={cat}>
@@ -144,15 +141,12 @@ export default function BuildPC() {
             <input value={discount} onChange={(e) => setDiscount(e.target.value)} style={{ width: 80 }} />
           </label>
           <h3>
-            Tổng gửi lên server: <span className="price-big">${finalTotal.toFixed(2)}</span> <span className="hint">(#60 — server tin)</span>
+            Tổng gửi lên server: <span className="price-big">${finalTotal.toFixed(2)}</span>
           </h3>
         </div>
         <div className="row" style={{ width: "100%" }}>
           <input value={tpl} onChange={(e) => setTpl(e.target.value)} style={{ flex: 1 }} />
         </div>
-        <p className="hint">
-          CSTI (#31): <code>&lt;%= constructor.constructor("alert(document.domain)")() %&gt;</code>
-        </p>
         <div dangerouslySetInnerHTML={{ __html: String(renderSummary()) }} />
         <div className="row" style={{ marginTop: 10 }}>
           <button className="primary" onClick={saveBuild}>
@@ -160,13 +154,6 @@ export default function BuildPC() {
           </button>
           <button onClick={checkCompat}>Kiểm tra tương thích (NoSQL #2)</button>
           <a href={window.location.pathname + "#"} onClick={(e) => e.preventDefault()} style={{ display: "none" }} />
-          <a
-            href={`/build#${encodeURIComponent(
-              '<form id=config><input name=allow></form><img src=x onerror=alert("build-xss")>'
-            )}`}
-          >
-            <button className="danger">Mở link "chia sẻ build" (DOM XSS demo)</button>
-          </a>
         </div>
         {saved && <pre>{saved}</pre>}
         {compatOut && <pre>{compatOut}</pre>}
@@ -174,9 +161,6 @@ export default function BuildPC() {
 
       <div className="card">
         <h3>⚡ Benchmark build (Web Worker #39)</h3>
-        <p className="hint">
-          Code chạy trong Worker tạo từ Blob — ngoài main thread nhưng cùng origin (fetch được, import được).
-        </p>
         <textarea rows={2} value={benchCode} onChange={(e) => setBenchCode(e.target.value)} style={{ width: "100%" }} />
         <div className="row">
           <button className="primary" onClick={runBenchmark}>
@@ -189,13 +173,6 @@ export default function BuildPC() {
 
       <div className="card">
         <h3>📥 Nhập build từ link chia sẻ</h3>
-        <p className="hint">
-          Hash được decode và đưa vào innerHTML khi safe-mode tắt. Payload clobber:{" "}
-          <code>&lt;form id=config&gt;&lt;input name=allow&gt;&lt;img src=x onerror=alert(1)&gt;</code>
-        </p>
-        <p>
-          safe-mode: {clobbered ? <b className="err">BỊ CLOBBER — hash vào innerHTML</b> : <span className="hint">bật</span>}
-        </p>
         <div id="import-out" className="comment" />
       </div>
     </div>

@@ -44,15 +44,8 @@ export default function Admin() {
   if (isAuthed && !allowed && !params.get("debug_login")) {
     return (
       <div className="card">
-        <h1>Admin</h1>
-        <p className="hint">
-          Trang chỉ render khi role=admin — nhưng chỉ ở client (#12). Bypass: bấm nút dưới, hoặc{" "}
-          <code>?debug_login=1</code> (#34), hoặc <code>localStorage.vulnshop_user = {'{"role":"admin"}'}</code>, hoặc{" "}
-          <code>?__proto__[isAdmin]=true</code> (#7).
-        </p>
-        <button className="danger" onClick={() => setAllowed(true)}>
-          Bypass client guard (demo #12)
-        </button>
+        <h1>403 — Khu vực quản trị</h1>
+        <p className="hint">Chỉ dành cho quản trị viên. Liên hệ IT nếu bạn cần quyền truy cập.</p>
       </div>
     );
   }
@@ -84,7 +77,7 @@ export default function Admin() {
     s.src = vendorScript;
     s.onerror = () => (setVendorOut("script load failed (xem console)"));
     document.body.appendChild(s);
-    setVendorOut((o) => o + `\n[script] injected ${vendorScript} — không SRI (#30/#31)`);
+    setVendorOut((o) => o + `\n[script] injected ${vendorScript}`);
   }
 
   /* [VULN #32] dynamic import module upload */
@@ -100,10 +93,6 @@ export default function Admin() {
   return (
     <div>
       <h1>Admin console</h1>
-      <p className="hint">
-        pollute status: {polluted ? <b className="err">POLLUTED — hidden panel mở (#7)</b> : "sạch"} · hidden panel:{" "}
-        <code>{String(canSeeHiddenPanel("reports"))}</code>
-      </p>
       {canSeeHiddenPanel("reports") && (
         <div className="comment">
           🎉 <b>Hidden reports panel</b> — mở nhờ prototype pollution / feature flag client (#7/#35)
@@ -111,7 +100,7 @@ export default function Admin() {
       )}
 
       <div className="card">
-        <h2>Gate bypass (#12/#13)</h2>
+        <h2>Phân quyền</h2>
         <div className="row">
           <select value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="user">user (không header)</option>
@@ -119,10 +108,6 @@ export default function Admin() {
           </select>
           <input placeholder="x-admin-token (optional)" value={token} onChange={(e) => setToken(e.target.value)} />
         </div>
-        <p className="hint">
-          Token thật nằm ở <code>/internal</code> (#43). Còn cách nữa: <code>POST /api/utils/merge</code> body{" "}
-          <code>{'{"__proto__":{"adminBypass":true}}'}</code> → mọi /api/admin/* mở (#57).
-        </p>
       </div>
 
       <div className="card">
@@ -130,11 +115,11 @@ export default function Admin() {
         <div className="row">
           <button onClick={() => call("/api/admin/stats")}>📊 stats</button>
           <button className="danger" onClick={exec}>
-            ⚙ exec command (#4)
+            ⚙ Chạy diagnostics
           </button>
-          <button onClick={() => call("/api/admin/logs")}>📜 logs (#36)</button>
+          <button onClick={() => call("/api/admin/logs")}>📜 Nhật ký hệ thống</button>
           <button onClick={() => call("/api/admin/settings")}>⚙ settings</button>
-          <button onClick={() => call("/api/v2/users")}>👥 users dump (#50)</button>
+          <button onClick={() => call("/api/v2/users")}>👥 Danh sách khách hàng</button>
           <button
             className="danger"
             onClick={async () => {
@@ -144,34 +129,28 @@ export default function Admin() {
               setOut(JSON.stringify(r.data, null, 2));
             }}
           >
-            🗑 delete user (#50 BFLA)
+            🗑 Xoá khách hàng
           </button>
         </div>
         <pre>{out || "(chưa chạy)"}</pre>
       </div>
 
       <div className="card">
-        <h2>Vendor integrations (supply chain lab #17/#18/#30/#31/#32/#33)</h2>
-        <p className="hint">
-          Secrets "tích hợp" nằm ngay trong bundle (#17/#18) — <code>BACKUP_ADMIN</code>:{" "}
-          <code>{JSON.stringify(BACKUP_ADMIN)}</code> · <code>window.VULN_CONFIG</code>:{" "}
-          <code>{JSON.stringify(VULN_CONFIG).slice(0, 120)}...</code>
-        </p>
+        <h2>Tích hợp SDK đối tác</h2>
         <div className="row">
           <input value={vendorScript} onChange={(e) => setVendorScript(e.target.value)} style={{ flex: 1 }} />
           <button className="danger" onClick={loadVendorScript}>
-            Load &lt;script src&gt; (no SRI)
+            Nạp widget đối tác
           </button>
         </div>
         <div className="row">
           <input value={vendorModule} onChange={(e) => setVendorModule(e.target.value)} style={{ flex: 1 }} />
           <button className="danger" onClick={loadVendorModule}>
-            import(vendorModule)
+            Nạp module đối tác
           </button>
         </div>
         <p className="hint">
-          Dependency confusion (#33): package internal <code>@vulnpc/utils</code> chưa publish — attacker đăng ký bản
-          99.0.0 trên npm → CI build RCE. Trong repo: jsonwebtoken@8.5.1, lodash@4.17.15 pin CVE có chủ đích (#72).
+
         </p>
         <pre>{vendorOut || "(chưa load)"}</pre>
       </div>

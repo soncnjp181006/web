@@ -38,7 +38,7 @@ import "./styles.css";
 // paths to the Render backend, so cookies stay first-party.
 SuperTokens.init({
   appInfo: {
-    appName: "VulnPC Shop",
+    appName: "PCForge",
     apiDomain: window.location.origin,
     websiteDomain: window.location.origin,
     apiBasePath: "/auth",

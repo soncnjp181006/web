@@ -32,30 +32,14 @@ export default function Notifications() {
     <div>
       <h1>🔔 Thông báo</h1>
       <div className="card">
-        <p className="hint">
-          Bridge nhận push từ bất kỳ nguồn nào (không kiểm tra origin #28). Giao thức:
-        </p>
-        <ul className="hint">
-          <li>chuỗi bất kỳ → render innerHTML (XSS)</li>
-          <li>
-            <code>theme:body&#123;background:red&#125;</code> → đổi theme
-          </li>
-          <li>
-            <code>{'{"__vulnSetUser":{"role":"admin"}}'}</code> → chiếm phiên client
-          </li>
-        </ul>
+        <p className="hint">Nhận thông báo đẩy từ hệ thống PCForge và đối tác.</p>
         <div id="notif-out" className="comment" />
         {theme && <style>{theme}</style>}
         <h2>Received</h2>
         <pre>{received.length ? JSON.stringify(received, null, 2) : "(chưa nhận gì)"}</pre>
       </div>
       <div className="card">
-        <button className="danger" onClick={() => window.postMessage('<img src=x onerror=alert("notif-xss")>', "*")}>
-          Tự gửi payload XSS
-        </button>{" "}
-        <a href="/postmessage-sender.html" target="_blank">
-          <button>Mở trang sender (tab mới)</button>
-        </a>
+
       </div>
     </div>
   );

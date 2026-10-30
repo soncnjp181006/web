@@ -27,7 +27,7 @@ export default function Compare() {
     if (!confirm(`Render ${n} hàng sẽ đơ tab. Chạy?`)) return;
     const t0 = performance.now();
     let html = "";
-    for (let i = 0; i < n; i++) html += `<div class="hint">row ${i}: VulnPC config line</div>`;
+    for (let i = 0; i < n; i++) html += `<div class="hint">row ${i}: PCForge config line</div>`;
     document.getElementById("bomb-out").innerHTML = html;
     setBombMs(`Render x${n} trong ${Math.round(performance.now() - t0)}ms — main thread block suốt thời gian đó`);
   }
@@ -75,14 +75,6 @@ export default function Compare() {
                 ))}
               </tr>
               <tr>
-                <td>Giá vốn (#43)</td>
-                {products.map((p) => (
-                  <td key={p.id} className="hint">
-                    ${p.internal_cost}
-                  </td>
-                ))}
-              </tr>
-              <tr>
                 <td>Specs</td>
                 {products.map((p) => (
                   <td key={p.id}>
@@ -102,27 +94,19 @@ export default function Compare() {
       )}
 
       <div className="card">
-        <h3>Thử thách render (#58 DOM DoS)</h3>
-        <div className="row">
-          <input value={rows} onChange={(e) => setRows(e.target.value)} style={{ width: 120 }} />
-          <button className="danger" onClick={domBomb}>
-            Render N hàng
-          </button>
-          <span className="hint">hoặc share URL: /compare?ids=6&rows=300000 — nạn nhân mở là đơ</span>
-        </div>
+        <h3>Gợi ý cấu hình theo ngân sách</h3>
         {bombMs && <p>{bombMs}</p>}
         <div id="bomb-out" style={{ maxHeight: 120, overflow: "auto" }} />
       </div>
 
       <div className="card">
-        <h3>Kiểm tra mã serial khuyến mãi (#59 client ReDoS)</h3>
+        <h3>Kiểm tra mã serial khuyến mãi</h3>
         <div className="row">
           <input value={serial} onChange={(e) => setSerial(e.target.value)} style={{ flex: 1 }} />
           <button className="danger" onClick={runRedos}>
             Kiểm tra
           </button>
         </div>
-        <p className="hint">Regex catastrophic chạy trên main thread — 30×'a'+b ≈ 76s đơ tab.</p>
         <pre>{redosOut}</pre>
       </div>
     </div>

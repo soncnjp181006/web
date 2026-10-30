@@ -1,4 +1,4 @@
--- VulnPC Shop schema (raw SQL, intentionally weak practices)
+-- PCForge schema (raw SQL, intentionally weak practices)
 CREATE TABLE IF NOT EXISTS users (
   id            TEXT PRIMARY KEY,
   email         TEXT UNIQUE,

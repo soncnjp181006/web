@@ -114,7 +114,7 @@ module.exports = (container) => {
       const info = await mailer.send({
         from: from || "spoofed@attacker.tld",
         to: config.smtpUser,
-        subject: `[VulnPC ticket #${req.params.id}] update`,
+        subject: `[PCForge ticket #${req.params.id}] update`,
         html: `<p>From: ${from}</p><pre>${String(message || "").slice(0, 4000)}</pre>`,
       });
       res.json({ ok: true, sent: !info.skipped, info });

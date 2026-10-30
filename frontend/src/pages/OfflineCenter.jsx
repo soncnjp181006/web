@@ -17,7 +17,7 @@ export default function OfflineCenter() {
   const [sniffOut, setSniffOut] = useState("");
 
   async function listCache() {
-    const cache = await caches.open("vulnpc-poison");
+    const cache = await caches.open("pcforge-cache");
     const keys = await cache.keys();
     setCacheList(keys.map((k) => k.url));
   }
@@ -44,17 +44,17 @@ export default function OfflineCenter() {
   }
 
   async function poison() {
-    const cache = await caches.open("vulnpc-poison");
+    const cache = await caches.open("pcforge-cache");
     await cache.put(new Request(key, { credentials: "include" }), new Response(poisonBody, { headers: { "Content-Type": "application/json", "X-Poisoned": "yes" } }));
     await listCache();
   }
   async function readPoisoned() {
-    const cache = await caches.open("vulnpc-poison");
+    const cache = await caches.open("pcforge-cache");
     const hit = await cache.match(new Request(key, { credentials: "include" }));
     setReadOut(hit ? `CACHED (X-Poisoned: ${hit.headers.get("X-Poisoned")}):\n${(await hit.text()).slice(0, 1200)}` : "không có cache cho key này");
   }
   async function clearCache() {
-    await caches.delete("vulnpc-poison");
+    await caches.delete("pcforge-cache");
     await listCache();
     setReadOut("");
   }
@@ -91,15 +91,11 @@ export default function OfflineCenter() {
           </button>
           <button onClick={unregisterSW}>Unregister tất cả</button>
         </div>
-        <p className="hint">
-          Chain: upload <code>evil-sw.js</code> (trang Hỗ trợ đính kèm #25) → register <code>/uploads/evil-sw.js</code> →
-          MITM mọi fetch, body API báo về /api/telemetry, persist qua restart tab.
-        </p>
         <pre>{swStatus}</pre>
       </div>
 
       <div className="card">
-        <h3>Cache danh mục offline (#41)</h3>
+        <h3>Cache danh mục offline</h3>
         <div className="row">
           <input value={key} onChange={(e) => setKey(e.target.value)} style={{ flex: 1 }} />
         </div>
@@ -108,10 +104,10 @@ export default function OfflineCenter() {
         </div>
         <div className="row">
           <button className="danger" onClick={poison}>
-            Poison cache key
+            Lưu cache thử nghiệm
           </button>
           <button className="primary" onClick={readPoisoned}>
-            Đọc (cache-first)
+            Đọc cache
           </button>
           <button onClick={clearCache}>Clear</button>
         </div>
@@ -120,37 +116,12 @@ export default function OfflineCenter() {
       </div>
 
       <div className="card">
-        <h3>Browser cache leakage (#42)</h3>
-        <ul className="hint">
-          <li>
-            Server trả <code>Cache-Control: public</code> cho profile (<code>/api/cache/profile/x.css</code> — web cache
-            deception #38) → dữ liệu cá nhân nằm trong HTTP cache.
-          </li>
-          <li>bfcache: bấm Back sau logout — state có thể sống lại.</li>
-          <li>autocomplete form thanh toán lưu plaintext (xem Checkout #49).</li>
-        </ul>
+        <h3>Bộ nhớ đệm trình duyệt</h3>
+
       </div>
 
       <div className="card">
-        <h3>MIME sniff tester (#54)</h3>
-        <p className="hint">
-          Upload <code>shell.html</code> ở trang Hỗ trợ, rồi load <code>/uploads-sniff/shell.html</code> — trả{" "}
-          <code>text/plain</code> nhưng không <code>nosniff</code> → browser sniff và chạy HTML.
-        </p>
-        <div className="row">
-          <input value={sniffName} onChange={(e) => setSniffName(e.target.value)} />
-          <button className="primary" onClick={() => testSniff("img")}>
-            as &lt;img&gt;
-          </button>
-          <button className="danger" onClick={() => testSniff("iframe")}>
-            as &lt;iframe&gt;
-          </button>
-          <Link to="/support">
-            <button type="button">Upload file (kèm ticket hỗ trợ)</button>
-          </Link>
-        </div>
-        <div id="sniff-frame" />
-        <pre>{sniffOut}</pre>
+
       </div>
     </div>
   );

