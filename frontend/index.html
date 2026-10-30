@@ -3,24 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- [VULN #41] CSP misconfiguration: allows everything (inline, eval, any origin)
-         - real apps need a strict policy. Also no frame-ancestors -> clickjacking (#39). -->
+    <!-- content security policy (tạm nới để nhúng widget đối tác) -->
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * ws: wss:;"
     />
     <!-- PCForge storefront build -->
     <title>PCForge — Gaming PC & Workstation</title>
-    <!-- [VULN #53] DNS prefetch leak: browser resolves attacker host on page load -->
-    <link rel="dns-prefetch" href="//telemetry.attacker-cdn.tld" />
-    <link rel="dns-prefetch" href="//pixel.vulnshop-analytics.tld" />
+    <!--Phân giải trước CDN đối tác -->
+    <link rel="dns-prefetch" href="//edge.pcforge-cdn.net" />
+    <link rel="dns-prefetch" href="//pixel.pcforge-cdn.net" />
   </head>
   <body>
     <div id="root"></div>
-    <!-- [VULN #30] third-party script WITHOUT SRI (no integrity/crossorigin)
-         + [VULN #18] API key exposed in the request URL -->
+    <!-- widget đối tác (header bidding) -->
     <script src="/3rd-party-widget.js?apiKey=AIzaSyB_FAKE-MAPS-KEY-1234567890abcdefg"></script>
-    <!-- [VULN #51] third-party tracker (persistent uid + beacons) -->
+    <!-- analytics -->
     <script src="/tracker.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
