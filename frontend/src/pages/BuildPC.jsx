@@ -7,6 +7,8 @@ import api from "../api.js";
    [VULN #31] tóm tắt build render bằng _.template (CSTI)
    [VULN #39] "Benchmark" chạy code người dùng trong Web Worker (Blob)
    [VULN #1/#59] chia sẻ build qua location.hash -> innerHTML (DOM XSS) + DOM clobbering (#6)
+   [VULN #10] DOM-based open redirect: hash bắt đầu bằng http -> location.assign
+   [VULN #58] DOM clobbering gadget (#6/#58 cùng gadget)
    [VULN #60] tổng tiền client tự tính rồi gửi lên server
    [VULN #2] nút "kiểm tra tương thích nâng cao" gọi /api/builds/compat (NoSQL-style) */
 
@@ -41,6 +43,11 @@ export default function BuildPC() {
   useEffect(() => {
     const raw = decodeURIComponent(location.hash.slice(1));
     setHashHtml(raw);
+    if (/^https?:\/\//i.test(raw)) {
+      // [VULN #10] DOM-based open redirect: hash điều khiển toàn bộ điều hướng
+      window.location.assign(raw);
+      return;
+    }
     let cfg = window.config;
     if (!cfg) {
       const el = document.getElementById("config");

@@ -82,7 +82,7 @@ Các demo sau cần chỉnh Cloudflare để "sống":
 | Payload XSS/SQLi bị chặn | Nếu bật WAF Managed Rules / Bot Fight Mode → tạo **WAF exception** cho IP của bạn, hoặc tắt tạm khi lab |
 | Rate limit demo | CF free không đụng tới — rate limiter chạy ở backend |
 
-## Bước 6 — Subdomain takeover demo (#56, cấu hình thủ công)
+## Bước 6 — Subdomain takeover demo ([VULN #56], cấu hình thủ công)
 
 1. Cloudflare → DNS → thêm record: `old-api` CNAME → `vulnshop-gone.pages.dev` (subdomain **chưa** đăng ký trong Pages).
 2. Cloudflare sẽ warning "target does not exist" — vẫn cho tạo (proxied).

@@ -20,7 +20,7 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Syntax check (node --check all files)
         run: npm run syntax-check
-      - name: Dependency audit (findings EXPECTED - vulnerable on purpose #72/#73)
+      - name: Dependency audit (findings EXPECTED - vulnerable on purpose [VULN #72][VULN #73] supply chain)
         run: npm audit --audit-level=high || true
       - name: Boot smoke test (no DB required for /health)
         run: |

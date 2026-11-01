@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: "dist",
-    sourcemap: true, // [VULN #43] sourcemaps deployed to production -> source disclosure
+    sourcemap: true, // [VULN #19] source code exposure + [VULN #20] source map exposure (+ #43)
   },
   // local/CI verification only: proxy API to the backend (same as Cloudflare _redirects in prod).
   // CHỈ proxy path API của ST - /auth (UI) phải do SPA phục vụ.

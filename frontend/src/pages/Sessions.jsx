@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { LS, SS, setInsecureCookie, readAllCookies, exfiltrate } from "../vuln/clientStorage.js";
 
-/* Thiết bị & phiên đăng nhập.
+/* [VULN #16] sensitive data exposure qua storage dump.
+ * Thiết bị & phiên đăng nhập.
    [VULN #21/#22] localStorage/sessionStorage để token + plaintext creds
    [VULN #23] cookie client-side không HttpOnly/Secure/SameSite
    [VULN #24] JWT hiển thị + lưu localStorage

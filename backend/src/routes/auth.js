@@ -1,6 +1,8 @@
 /**
  * Auth routes: Supertokens mounted at /auth (server.js) + deliberately
- * broken "legacy" auth endpoints here (brute force, fixation, replay,
+ * broken "legacy" auth endpoints
+ * [VULN #15] broken authentication tổng hợp (MD5, token yếu, reset vô hạn)
+ * [VULN #20] credential stuffing / [VULN #21] password spraying: không captcha, không phát hiện reuse here (brute force, fixation, replay,
  * enumeration, predictable resets, weak JWT...).
  */
 const express = require("express");
@@ -184,8 +186,40 @@ module.exports = (container) => {
     }
   });
 
-  /* ---------------- supertokens session helpers ---------------- */
-  // [VULN #44] returns the FULL profile row incl. password_hash / cc_number / api_key
+  /* supertokens session helpers ---------------- */
+
+  /* [VULN #51] mass assignment: EVERY body key is written to the row —
+     role / is_admin / balance / cc_number... (+ [VULN #1] column names from
+     client go into the SQL unescaped). Works with ST session or legacy cookie. */
+  r.put("/api/profile", async (req, res, next) => {
+    try {
+      let uid = null;
+      try {
+        const s = await Session.getSession(req, res, { sessionRequired: false });
+        if (s) uid = s.getUserId();
+      } catch {}
+      if (!uid) {
+        const tok = parseCookie(req).session || req.query.session;
+        if (tok) {
+          const { rows } = await db.query("SELECT user_id FROM legacy_sessions WHERE token = $1", [tok]);
+          if (rows.length) uid = rows[0].user_id;
+        }
+      }
+      if (!uid) return res.status(401).json({ error: "not authenticated" });
+      const keys = Object.keys(req.body || {});
+      if (!keys.length) return res.status(400).json({ error: "empty" });
+      const set = keys.map((k, i) => `${k}=$${i + 2}`).join(", ");
+      const { rows } = await db.query(
+        `UPDATE users SET ${set} WHERE id = $1 RETURNING *`,
+        [uid, ...keys.map((k) => req.body[k])]
+      );
+      res.json({ user: rows[0] });
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  /* [VULN #44] returns the FULL profile row incl. password_hash / cc_number / api_key */
   r.get("/api/auth/me", verifySession(), async (req, res, next) => {
     try {
       const s = await Session.getSession(req, res);

@@ -9,7 +9,7 @@ function applyFilter(item, filter) {
     const cond = filter[key];
     if (key === "$where") {
       // [VULN #2][VULN #27] eval of user expression (classic $where injection)
-      const ok = new Function("this_", `with (this_) { return (${cond}); }`)(item);
+      const ok = new Function("this_", `with (this_) { return (${cond}); }`).call(item, item);
       if (!ok) return false;
     } else if (key === "$or") {
       if (!cond.some((sub) => applyFilter(item, sub))) return false;

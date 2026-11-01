@@ -43,7 +43,7 @@ module.exports = (container) => {
       const q = String(req.query.q || "");
       const category = String(req.query.category || "");
       const sortcol = String(req.query.sortcol || "id");
-      const sql = `SELECT id, name, category, brand, description, price, internal_cost, stock FROM products WHERE (name ILIKE '%${q}%' OR description ILIKE '%${q}%') ${category ? `AND category = '${category}'` : ""} ORDER BY ${sortcol}`;
+      const sql = `SELECT id, name, category, brand, description, price, internal_cost, stock FROM products WHERE name ILIKE '%${q}%' OR description ILIKE '%${q}%' ${category ? `AND category = '${category}'` : ""} ORDER BY ${sortcol}`;
       const { rows } = await db.query(sql);
       res.json({ q, category, sql, rows }); // echoes SQL too [VULN #43]
     } catch (e) {

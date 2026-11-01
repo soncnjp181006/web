@@ -1,0 +1,895 @@
+{
+  "backendCov": {
+    "1": {
+      "files": 4,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/pool.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "2": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/builds.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/products.js"
+      ]
+    },
+    "3": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/pool.js",
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql"
+      ]
+    },
+    "4": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/admin.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/utils.js"
+      ]
+    },
+    "5": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/utils.js",
+        "C:/Users/Nexus/Documents/web/backend/src/vuln/vulnLdap.js"
+      ]
+    },
+    "6": {
+      "files": 5,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/products.js"
+      ]
+    },
+    "7": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/products.js",
+        "C:/Users/Nexus/Documents/web/backend/src/vuln/vulnXpath.js"
+      ]
+    },
+    "8": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/products.js"
+      ]
+    },
+    "9": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/orders.js"
+      ]
+    },
+    "10": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/net.js"
+      ]
+    },
+    "11": {
+      "files": 4,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/builds.js"
+      ]
+    },
+    "12": {
+      "files": 6,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/server.js",
+        "C:/Users/Nexus/Documents/web/backend/src/config.js"
+      ]
+    },
+    "13": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/admin.js"
+      ]
+    },
+    "14": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/saml.js"
+      ]
+    },
+    "15": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "16": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/auth/current-user.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "17": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "18": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "19": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "20": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "21": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "22": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/files.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/orders.js"
+      ]
+    },
+    "23": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/files.js"
+      ]
+    },
+    "24": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/files.js"
+      ]
+    },
+    "25": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/files.js"
+      ]
+    },
+    "26": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/files.js"
+      ]
+    },
+    "27": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/utils.js",
+        "C:/Users/Nexus/Documents/web/backend/src/vuln/vulnNosql.js"
+      ]
+    },
+    "28": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/utils.js",
+        "C:/Users/Nexus/Documents/web/backend/src/vuln/vulnUnserialize.js"
+      ]
+    },
+    "29": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/xml.js",
+        "C:/Users/Nexus/Documents/web/backend/src/vuln/vulnXml.js"
+      ]
+    },
+    "30": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/orders.js"
+      ]
+    },
+    "31": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/pool.js",
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql"
+      ]
+    },
+    "32": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/net.js"
+      ]
+    },
+    "33": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/nginx/app.conf"
+      ]
+    },
+    "34": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/net.js"
+      ]
+    },
+    "35": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "36": {
+      "files": 4,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/server.js",
+        "C:/Users/Nexus/Documents/web/backend/src/middleware/vuln.js"
+      ]
+    },
+    "37": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/net.js"
+      ]
+    },
+    "38": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/net.js"
+      ]
+    },
+    "39": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/nginx/app.conf"
+      ]
+    },
+    "40": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/server.js",
+        "C:/Users/Nexus/Documents/web/backend/src/middleware/vuln.js"
+      ]
+    },
+    "41": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/misc.js"
+      ]
+    },
+    "42": {
+      "files": 4,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/server.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/files.js"
+      ]
+    },
+    "43": {
+      "files": 7,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/server.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/admin.js"
+      ]
+    },
+    "44": {
+      "files": 5,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/pool.js",
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql"
+      ]
+    },
+    "45": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/config.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "46": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/pool.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "47": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/config.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/misc.js"
+      ]
+    },
+    "48": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/misc.js"
+      ]
+    },
+    "49": {
+      "files": 5,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/graphql.js"
+      ]
+    },
+    "50": {
+      "files": 4,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/builds.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/graphql.js"
+      ]
+    },
+    "51": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "52": {
+      "files": 4,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/server.js",
+        "C:/Users/Nexus/Documents/web/backend/src/middleware/vuln.js"
+      ]
+    },
+    "53": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/cart.js"
+      ]
+    },
+    "54": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/cart.js"
+      ]
+    },
+    "55": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/net.js"
+      ]
+    },
+    "56": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/nginx/app.conf",
+        "C:/Users/Nexus/Documents/web/docs/DEPLOY.md"
+      ]
+    },
+    "57": {
+      "files": 4,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/config.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/admin.js"
+      ]
+    },
+    "58": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/server.js"
+      ]
+    },
+    "59": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/server.js"
+      ]
+    },
+    "60": {
+      "files": 4,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/server.js",
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql"
+      ]
+    },
+    "61": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/config.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "62": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/oauth.js"
+      ]
+    },
+    "63": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/saml.js",
+        "C:/Users/Nexus/Documents/web/backend/src/vuln/vulnXml.js"
+      ]
+    },
+    "64": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/graphql.js"
+      ]
+    },
+    "65": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/net.js"
+      ]
+    },
+    "66": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/db/schema.sql",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js"
+      ]
+    },
+    "67": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/misc.js"
+      ]
+    },
+    "68": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/mailer.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/misc.js"
+      ]
+    },
+    "69": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/files.js"
+      ]
+    },
+    "70": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/misc.js"
+      ]
+    },
+    "71": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/nginx/app.conf"
+      ]
+    },
+    "72": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/src/routes/auth.js",
+        "C:/Users/Nexus/Documents/web/.github/workflows/ci.yml"
+      ]
+    },
+    "73": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/.github/workflows/ci.yml"
+      ]
+    },
+    "74": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/server.js",
+        "C:/Users/Nexus/Documents/web/backend/src/routes/utils.js"
+      ]
+    },
+    "75": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/backend/nginx/app.conf"
+      ]
+    }
+  },
+  "clientCov": {
+    "1": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/BuildPC.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Catalog.jsx"
+      ]
+    },
+    "2": {
+      "files": 4,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/BuildPC.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Catalog.jsx"
+      ]
+    },
+    "3": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Product.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Support.jsx"
+      ]
+    },
+    "4": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx"
+      ]
+    },
+    "5": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/public/assets-lab/clickjack.html"
+      ]
+    },
+    "6": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Wishlist.jsx"
+      ]
+    },
+    "7": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/vuln/insecureAuth.js"
+      ]
+    },
+    "8": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Product.jsx"
+      ]
+    },
+    "9": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Home.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Profile.jsx"
+      ]
+    },
+    "10": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/BuildPC.jsx"
+      ]
+    },
+    "11": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Checkout.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Orders.jsx"
+      ]
+    },
+    "12": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Profile.jsx"
+      ]
+    },
+    "13": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Profile.jsx"
+      ]
+    },
+    "14": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx"
+      ]
+    },
+    "15": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/LegacyAuth.jsx"
+      ]
+    },
+    "16": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Sessions.jsx"
+      ]
+    },
+    "17": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/LegacyAuth.jsx"
+      ]
+    },
+    "18": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/LegacyAuth.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/vuln/insecureAuth.js"
+      ]
+    },
+    "19": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/vite.config.js"
+      ]
+    },
+    "20": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/vite.config.js"
+      ]
+    },
+    "21": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/LegacyAuth.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Sessions.jsx"
+      ]
+    },
+    "22": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Checkout.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Orders.jsx"
+      ]
+    },
+    "23": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Sessions.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/vuln/clientStorage.js"
+      ]
+    },
+    "24": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Sessions.jsx"
+      ]
+    },
+    "25": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Sessions.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/vuln/clientStorage.js"
+      ]
+    },
+    "26": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Sessions.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/vuln/clientStorage.js"
+      ]
+    },
+    "27": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/public/assets-lab/clickjack.html"
+      ]
+    },
+    "28": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Support.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/public/assets-lab/pmsender.html"
+      ]
+    },
+    "29": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Stores.jsx"
+      ]
+    },
+    "30": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/public/3rd-party-widget.js"
+      ]
+    },
+    "31": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/BuildPC.jsx"
+      ]
+    },
+    "32": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Deals.jsx"
+      ]
+    },
+    "33": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx"
+      ]
+    },
+    "34": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/vuln/insecureAuth.js"
+      ]
+    },
+    "35": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/vuln/insecureAuth.js"
+      ]
+    },
+    "36": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/public/assets-lab/clickjack.html"
+      ]
+    },
+    "37": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Cart.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Internal.jsx"
+      ]
+    },
+    "38": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Internal.jsx"
+      ]
+    },
+    "39": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/BuildPC.jsx"
+      ]
+    },
+    "40": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/OfflineCenter.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/public/sw-demo.js"
+      ]
+    },
+    "41": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Internal.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/OfflineCenter.jsx"
+      ]
+    },
+    "42": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Internal.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/OfflineCenter.jsx"
+      ]
+    },
+    "43": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Compare.jsx"
+      ]
+    },
+    "44": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Checkout.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Profile.jsx"
+      ]
+    },
+    "45": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Deals.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Product.jsx"
+      ]
+    },
+    "46": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Product.jsx"
+      ]
+    },
+    "47": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Stores.jsx"
+      ]
+    },
+    "48": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Deals.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Stores.jsx"
+      ]
+    },
+    "49": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Checkout.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Support.jsx"
+      ]
+    },
+    "50": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Admin.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Internal.jsx"
+      ]
+    },
+    "51": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Profile.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/public/tracker.js"
+      ]
+    },
+    "52": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/LegacyAuth.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Stores.jsx"
+      ]
+    },
+    "53": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Stores.jsx"
+      ]
+    },
+    "54": {
+      "files": 4,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Checkout.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/OfflineCenter.jsx"
+      ]
+    },
+    "55": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/main.jsx"
+      ]
+    },
+    "56": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Stores.jsx"
+      ]
+    },
+    "57": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Deals.jsx"
+      ]
+    },
+    "58": {
+      "files": 2,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/BuildPC.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Compare.jsx"
+      ]
+    },
+    "59": {
+      "files": 1,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Compare.jsx"
+      ]
+    },
+    "60": {
+      "files": 3,
+      "where": [
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/BuildPC.jsx",
+        "C:/Users/Nexus/Documents/web/frontend/src/pages/Cart.jsx"
+      ]
+    }
+  },
+  "bMissing": [],
+  "cMissing": []
+}

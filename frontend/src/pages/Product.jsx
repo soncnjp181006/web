@@ -6,7 +6,8 @@ import api from "../api.js";
 /* Trang chi tiết sản phẩm.
    [VULN #3/#8] review stored XSS (dangerouslySetInnerHTML)
    [VULN #31] chữ ký review biên dịch bằng _.template trong browser (CSTI)
-   [VULN #45/#46] link "trang hãng" target=_blank không rel (tabnabbing)
+   [VULN #45] tabnabbing | [VULN #46] reverse tabnabbing — link "trang hãng" target=_blank không rel (tabnabbing)
+   [VULN #8] client-side template injection (CSTI) ở chữ ký review
    [VULN #54] giá client tự gửi khi add-to-cart */
 export default function Product() {
   const { id } = useParams();

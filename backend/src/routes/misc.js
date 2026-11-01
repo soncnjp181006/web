@@ -1,6 +1,7 @@
 /**
  * Misc: email spoofing (#68), account enumeration (#67), debug/info disclosure
  * (#42/#43), insecure headers (#70), CSP misconfig (#41), route map.
+ * [VULN #48] insecure API tổng hợp: over-fetching, verbose error, GET đổi state.
  */
 const express = require("express");
 

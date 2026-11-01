@@ -3,6 +3,7 @@
  *
  * WARNING: This application is INTENTIONALLY VULNERABLE for security training.
  * Every vulnerability is marked with a comment like [VULN #N] mapping to docs/VULNS.md.
+ * [VULN #58][VULN #59] DOM clobbering / DOM-based XSS: danh số kép — implemented client-side (frontend/src/pages/BuildPC.jsx).
  */
 const path = require("path");
 const fs = require("fs");
@@ -14,6 +15,10 @@ const { middleware: stMiddleware, errorHandler: stErrorHandler } = require("supe
 const config = require("./src/config");
 const container = require("./src/di/container");
 const vulnMiddleware = require("./src/middleware/vuln");
+
+/* lab survival: SMTP/network errors asynchronous không được phép giết server */
+process.on("unhandledRejection", (e) => console.log("[unhandledRejection]", e && (e.message || e)));
+process.on("uncaughtException", (e) => console.log("[uncaughtException]", e && (e.message || e)));
 
 /* ------------------------------------------------------------------ */
 /* Dependency Injection container (DI)                                 */

@@ -46,18 +46,6 @@ module.exports = (container) => {
     }
   });
 
-  /* [VULN #11] IDOR: no ownership check - any numeric id returns anyone's order.
-     Frontend "helpfully" exposes sequential ids. */
-  r.get("/api/orders/:id", async (req, res, next) => {
-    try {
-      const { rows } = await db.query("SELECT * FROM orders WHERE id = $1", [req.params.id]);
-      if (!rows.length) return res.status(404).json({ error: "not found" });
-      res.json({ order: rows[0] });
-    } catch (e) {
-      next(e);
-    }
-  });
-
   /* [VULN #9] CSRF: state-changing action via GET, cookie session, SameSite=None,
      no CSRF token. Demo page: /csrf-demo.html */
   r.get("/api/orders/transfer", async (req, res, next) => {
@@ -72,40 +60,6 @@ module.exports = (container) => {
       await db.query("UPDATE users SET balance = balance + $1 WHERE id = $2", [amount, target[0].id]);
       const { rows: me } = await db.query("SELECT id, email, balance FROM users WHERE id = $1", [uid]);
       res.json({ ok: true, transferred: amount, to: target[0], me: me[0] });
-    } catch (e) {
-      next(e);
-    }
-  });
-
-  /* [VULN #53] Race condition: classic check-then-act with an artificial 150ms gap.
-     Fire 10 parallel requests and every one of them passes the check. */
-  r.post("/api/coupon/redeem", async (req, res, next) => {
-    try {
-      const uid = await currentUserId(req, container);
-      if (!uid) return res.status(401).json({ error: "login first" });
-      const code = String((req.body || {}).code || "");
-      const { rows } = await db.query(
-        "SELECT code, discount_pct, used_count, max_uses FROM coupons WHERE code = $1 AND used_count < max_uses",
-        [code]
-      );
-      if (!rows.length) return res.status(400).json({ error: "coupon invalid or exhausted" });
-      await new Promise((r2) => setTimeout(r2, 150)); // widen the race window
-      await db.query("UPDATE coupons SET used_count = used_count + 1 WHERE code = $1", [code]);
-      // no per-user redemption record -> same user can redeem again (#54 stacking)
-      res.json({ ok: true, coupon: rows[0], note: "check-then-act without locking (#53); no per-user limit (#54)" });
-    } catch (e) {
-      next(e);
-    }
-  });
-
-  /* [VULN #49] BOLA: list "any owner's" coupons */
-  r.get("/api/coupons/list", async (req, res, next) => {
-    try {
-      const owner = String(req.query.owner || "");
-      const { rows } = await db.query(
-        `SELECT o.user_id, o.coupon, count(*) AS uses FROM orders o WHERE o.coupon IS NOT NULL ${owner ? "AND o.user_id = '" + owner + "'" : ""} GROUP BY o.user_id, o.coupon`
-      ); // + bonus SQLi via owner (#1)
-      res.json({ coupons: rows });
     } catch (e) {
       next(e);
     }
@@ -159,6 +113,52 @@ module.exports = (container) => {
         `Yêu cầu bảo hành/RMA cho đơn #${req.params.id}. Lý do: ${reason}`,
       ]);
       res.json({ ticket: rows[0] });
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  /* [VULN #11] IDOR: no ownership check - any numeric id returns anyone's order.
+     Frontend "helpfully" exposes sequential ids. */
+  r.get("/api/orders/:id", async (req, res, next) => {
+    try {
+      const { rows } = await db.query("SELECT * FROM orders WHERE id = $1", [req.params.id]);
+      if (!rows.length) return res.status(404).json({ error: "not found" });
+      res.json({ order: rows[0] });
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  /* [VULN #53] Race condition: classic check-then-act with an artificial 150ms gap.
+     Fire 10 parallel requests and every one of them passes the check. */
+  r.post("/api/coupon/redeem", async (req, res, next) => {
+    try {
+      const uid = await currentUserId(req, container);
+      if (!uid) return res.status(401).json({ error: "login first" });
+      const code = String((req.body || {}).code || "");
+      const { rows } = await db.query(
+        "SELECT code, discount_pct, used_count, max_uses FROM coupons WHERE code = $1 AND used_count < max_uses",
+        [code]
+      );
+      if (!rows.length) return res.status(400).json({ error: "coupon invalid or exhausted" });
+      await new Promise((r2) => setTimeout(r2, 150)); // widen the race window
+      await db.query("UPDATE coupons SET used_count = used_count + 1 WHERE code = $1", [code]);
+      // no per-user redemption record -> same user can redeem again (#54 stacking)
+      res.json({ ok: true, coupon: rows[0], note: "check-then-act without locking (#53); no per-user limit (#54)" });
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  /* [VULN #49] BOLA: list "any owner's" coupons */
+  r.get("/api/coupons/list", async (req, res, next) => {
+    try {
+      const owner = String(req.query.owner || "");
+      const { rows } = await db.query(
+        `SELECT o.user_id, o.coupon, count(*) AS uses FROM orders o WHERE o.coupon IS NOT NULL ${owner ? "AND o.user_id = '" + owner + "'" : ""} GROUP BY o.user_id, o.coupon`
+      ); // + bonus SQLi via owner (#1)
+      res.json({ coupons: rows });
     } catch (e) {
       next(e);
     }

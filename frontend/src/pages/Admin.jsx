@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Session from "supertokens-auth-react/recipe/session";
 import { mergeDeep, parseNestedQuery, getClientUser, setClientUser, isClientAdmin, canSeeHiddenPanel, BACKUP_ADMIN, VULN_CONFIG } from "../vuln/insecureAuth.js";
+// [VULN #14] JavaScript injection (new Function sink trong vendor panel) | [VULN #31] script injection | [VULN #33] dependency confusion
 
 /* Admin dashboard.
    [VULN #12] client-side-only guard + static token

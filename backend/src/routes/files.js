@@ -12,7 +12,8 @@ module.exports = (container) => {
   const db = container.resolve("db");
   const r = express.Router();
 
-  /* [VULN #25][#26] UNRESTRICTED upload: original filename preserved (path
+  /* [VULN #25] arbitrary upload
+     [VULN #26] unrestricted upload: original filename preserved (path
      traversal in filename possible too), NO extension/MIME allowlist, NO
      content scan. 20MB cap only so the free-tier container survives. */
   const upload = multer({
@@ -80,7 +81,7 @@ module.exports = (container) => {
         }
         return res.json({ mode: "RFI", remote: page, executed: String(result).slice(0, 2000) });
       }
-      const p = path.join(__dirname, "..", "..", "views", page);
+      const p = path.join(__dirname, "..", "..", page); // LFI base = backend root
       fs.readFile(p, "utf8", (err, data) => {
         if (err) return res.status(404).json({ error: err.message, resolvedPath: p });
         res.type("text/plain").send(data);

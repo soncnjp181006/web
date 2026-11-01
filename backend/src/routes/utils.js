@@ -16,7 +16,8 @@ module.exports = (container) => {
      payload: ?host=127.0.0.1;id  or  ?host=$(whoami)  or  ?host=1%0aid */
   r.get("/api/utils/ping", (req, res) => {
     const host = String(req.query.host || "127.0.0.1");
-    exec(`ping -c 1 -W 2 ${host}`, { timeout: 6000 }, (err, stdout, stderr) => {
+    const flag = process.platform === "win32" ? "-n 1" : "-c 1 -W 2";
+    exec(`ping ${flag} ${host}`, { timeout: 6000, shell: process.platform === "win32" ? "cmd.exe" : "/bin/sh" }, (err, stdout, stderr) => {
       res.json({ host, stdout, stderr, err: err && err.message });
     });
   });

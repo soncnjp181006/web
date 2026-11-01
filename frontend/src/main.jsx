@@ -31,6 +31,7 @@ import Stores from "./pages/Stores.jsx";
 import OfflineCenter from "./pages/OfflineCenter.jsx";
 import Notifications from "./pages/Notifications.jsx";
 import Internal from "./pages/Internal.jsx";
+// [VULN #55] CSP meta ở index.html cố ý nới lỏng (unsafe-inline/eval)
 import "./styles.css";
 
 // [auth] Supertokens: EmailPassword (sign up / sign in with email+password).

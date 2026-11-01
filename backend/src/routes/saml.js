@@ -1,5 +1,6 @@
 /**
- * [VULN #63] SAML "implementation" that consumes assertions WITHOUT verifying
+ * [VULN #63] SAML
+ * [VULN #14] authentication bypass: unsigned assertion accepted "implementation" that consumes assertions WITHOUT verifying
  * signatures - craft any base64 SAMLResponse and log in as anyone
  * (signature wrapping / unsigned assertion attacks).
  */
@@ -15,7 +16,7 @@ module.exports = (container) => {
     `<?xml version="1.0"?>
 <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
   <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">
-    <saml:Subject><saml:NameID>admin@vulnshop.local</saml:NameID></saml:Subject>
+    <saml:Subject><saml:NameID>admin@pcforge.local</saml:NameID></saml:Subject>
   </saml:Assertion>
 </samlp:Response>`,
     "utf8"
