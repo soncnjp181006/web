@@ -5,6 +5,31 @@
 > + 60 client-side) nằm **tự nhiên bên trong từng tính năng** của shop, không phải lab rời rạc.
 > **KHÔNG** dùng dữ liệu thật. Public internet = bot tấn công trong vài phút — tắt khi không dùng.
 
+## Chạy local
+
+Mở PowerShell ở thư mục gốc và chạy:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start-web.ps1
+```
+
+Script sẽ:
+- tạo `.env` từ `.env.example` nếu chưa có
+- cài dependency cho `backend/` và `frontend/` nếu chưa có
+- khởi động backend ở port `4000`
+- khởi động frontend Vite ở port `4173`
+
+Truy cập:
+- Frontend: http://127.0.0.1:4173
+- Backend health: http://127.0.0.1:4000/health
+
+Nếu chỉ muốn chạy riêng một phần, dùng:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start-web.ps1 -NoBackend
+powershell -ExecutionPolicy Bypass -File .\start-web.ps1 -NoFrontend
+```
+
 ## Tính năng (kết nối xuyên suốt)
 
 ```
